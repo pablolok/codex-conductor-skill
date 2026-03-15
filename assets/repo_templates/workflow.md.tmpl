@@ -1,0 +1,54 @@
+# Conductor Workflow
+
+This document defines the canonical Conductor workflow for this repository.
+
+## Scope
+
+`AGENTS.md` remains the source of truth for coding constraints, repository rules, and mandatory verification.
+
+This workflow defines how structured work is organized when a request explicitly invokes Conductor.
+
+## Canonical Command Surface
+
+- `conductor:setup`
+- `conductor:newTrack`
+- `conductor:implement`
+- `conductor:status`
+- `conductor:review`
+- `conductor:revert`
+- `conductor:archive`
+
+## Core Model
+
+Conductor work is organized as:
+
+- project context
+- tracks
+- phases
+- tasks and sub-tasks inside `plan.md`
+
+Each track lives in `conductor/tracks/<track-id>/`.
+
+## States and Phases
+
+- `spec`
+- `confirming`
+- `planned`
+- `implementing`
+- `reviewing`
+- `verifying`
+- `done`
+- `archived`
+- `blocked`
+
+Expected progression:
+
+`spec -> confirming -> planned -> implementing -> reviewing -> verifying -> done -> archived`
+
+## Source of Truth
+
+- `conductor/tracks.md` is the portfolio index.
+- `metadata.json` is the per-track structured state.
+- `spec.md`, `plan.md`, `review.md`, and `verify.md` are the operational source of truth.
+
+If they diverge, operational track files drive the reconciliation.

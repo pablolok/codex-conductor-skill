@@ -1,0 +1,5 @@
+version: 1
+interface:
+  display_name: Conductor
+  short_description: Bootstrap and operate a Google Conductor-style repo workflow
+  default_prompt: Use the repo-local conductor workflow and bundled scripts to bootstrap, refresh, and operate track-based structured work.

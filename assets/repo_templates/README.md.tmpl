@@ -1,0 +1,35 @@
+# Conductor in This Repository
+
+This repository uses a Google Conductor-style workflow for structured work.
+
+`AGENTS.md` defines repository-wide engineering rules, validation requirements, and coding constraints.
+
+`conductor/` defines the workflow, project context, track structure, and the command semantics used when work is explicitly performed through Conductor.
+
+## What Conductor Is
+
+Conductor is a context-driven development workflow built around:
+
+- project context files shared across work
+- explicit track creation and progression
+- `spec -> confirm -> plan -> implement -> review -> verify -> archive`
+- markdown-first planning with structured per-track metadata
+- resume and checkpoint-friendly work organization
+
+In this repository, Conductor is implemented as a documented process and file structure backed by a Codex skill bootstrap.
+
+## Relationship Between `AGENTS.md` and `conductor/`
+
+- `AGENTS.md` answers: how code must be written and verified in this repository.
+- `conductor/workflow.md` answers: how structured work must be organized and progressed.
+- When a request is handled through Conductor, both must be followed.
+
+## Supported Conductor Commands
+
+- `conductor:setup`
+- `conductor:newTrack`
+- `conductor:implement`
+- `conductor:status`
+- `conductor:review`
+- `conductor:revert`
+- `conductor:archive`
