@@ -69,6 +69,12 @@ The shared Git workflow encoded by the skill is:
 - branch policy: ask per track
 - commit policy: commit per phase
 
+Track plans are expected to use a hybrid format:
+
+- phases remain the main execution checkpoints
+- each phase contains numbered steps
+- each step uses `[ ]`, `[~]`, `[x]`
+
 The shared quality workflow encoded by the skill is:
 
 - coverage target is explicitly requested during setup

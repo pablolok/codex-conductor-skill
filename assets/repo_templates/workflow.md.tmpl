@@ -65,11 +65,21 @@ Conductor work is organized as:
 - project context
 - tracks
 - phases
-- tasks and sub-tasks inside `plan.md`
+- numbered steps inside each phase of `plan.md`
 
 Each track lives in `conductor/tracks/<track-id>/`.
 The top-level navigation index is `conductor/index.md`.
 Each track has its own navigation file at `conductor/tracks/<track-id>/index.md`.
+
+## Plan Format
+
+Track plans should use a hybrid Conductor format:
+
+- phases remain the main workflow checkpoints
+- each phase contains numbered steps such as `Step 1`, `Step 2`, `Step 3`
+- each step is tracked with `[ ]`, `[~]`, or `[x]`
+
+This keeps the plan close to the official Conductor procedural style while preserving phase-level review, verification, and commit checkpoints.
 
 ## States and Phases
 

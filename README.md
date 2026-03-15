@@ -61,6 +61,14 @@ The shared quality workflow currently encoded by the skill is:
 - ask for the repository coverage target during setup
 - in this repository, the approved target is 100%
 
+## Plan Format
+
+Track plans are expected to use a hybrid format:
+
+- phases remain the main execution checkpoints
+- each phase contains numbered steps
+- each step is tracked with `[ ]`, `[~]`, `[x]`
+
 ## Materialization Script
 
 The bootstrap script supports the final materialization step:

@@ -46,6 +46,7 @@ Use this skill only for explicit Conductor workflow requests.
 3. Run `scripts/new_track.py --repo <repo-root> --title "<title>"`.
 4. Ask whether to create or use a dedicated branch for that track, per the shared workflow policy.
 5. Continue by refining the generated `spec.md` and `plan.md`.
+6. Keep `plan.md` in the hybrid format: phases as workflow checkpoints, numbered steps inside each phase, and `[ ]`, `[~]`, `[x]` markers on each step.
 
 ### `conductor:status`
 
@@ -60,6 +61,7 @@ Run `scripts/archive_tracks.py --repo <repo-root>`.
 These remain agent-driven workflow commands.
 
 - For `implement`, use the active track's `plan.md` and update `[ ]`, `[~]`, `[x]`, `metadata.json`, `index.md`, `tracks.md`, and `verify.md`.
+- For `implement`, keep the plan organized as phases with numbered steps rather than flat task bullets.
 - For `implement`, treat a phase checkpoint as the standard commit boundary for the track unless the approved workflow explicitly differs.
 - For `implement`, keep verification aligned with the approved repository coverage target.
 - For `review`, update `review.md` with findings, risks, gaps, and decision.

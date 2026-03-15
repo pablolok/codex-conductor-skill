@@ -4,14 +4,33 @@
 
 Describe the delivery approach for the track.
 
-## Phase: Spec
+## Execution Rules
 
-- [~] Draft and confirm the spec
+- Follow `AGENTS.md` and `conductor/workflow.md` throughout the track.
+- Execute implementation with explicit TDD phases: red, green, refactor.
+- Update track progress as phases and numbered steps move forward.
+- Record meaningful verification checkpoints in `verify.md`.
+- Treat the end of a phase as the standard commit boundary unless the approved workflow says otherwise.
 
-## Phase: Plan
+## Phase 1: Spec
 
-- [ ] Break the work into concrete tasks
-- [ ] Define verification checkpoints
+- [~] Step 1. Draft and confirm the spec
+
+## Phase 2: Discovery And Design
+
+- [ ] Step 1. Break the work into concrete numbered steps
+- [ ] Step 2. Define the design and interface shape for the first implementation slice
+
+## Phase 3: TDD Implementation
+
+- [ ] Step 1. Add the first failing deterministic test
+- [ ] Step 2. Implement the minimum code required to make that test pass
+- [ ] Step 3. Refactor while keeping the relevant slice green
+
+## Phase 4: Verification
+
+- [ ] Step 1. Define verification checkpoints
+- [ ] Step 2. Record verification outcomes in `verify.md`
 
 ## Public Interfaces
 
