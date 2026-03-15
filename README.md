@@ -45,9 +45,15 @@ It should:
 - request permission for a read-only scan on brownfield repositories
 - analyze the target repository
 - gather or refresh only the missing shared context through guided questions
+- define the shared Git workflow for tracks
 - show a preview of the proposed live workspace artifacts and decisions
 - require explicit confirmation
 - only then materialize the repo-local `conductor/` files
+
+The shared Git workflow currently encoded by the skill is:
+
+- ask per track whether to create or use a dedicated branch
+- use phase checkpoints as the standard commit boundary
 
 ## Materialization Script
 

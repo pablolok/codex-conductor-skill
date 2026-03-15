@@ -58,9 +58,15 @@ It should:
 2. request permission for a read-only scan on brownfield repositories
 3. analyze the repository
 4. gather or refresh only the missing shared context through guided questions
-5. show a preview of the proposed live workspace artifacts
+5. define the shared Git workflow for tracks
+6. show a preview of the proposed live workspace artifacts and workflow decisions
 6. require explicit confirmation
 7. only then materialize the repo-local `conductor/` workspace
+
+The shared Git workflow encoded by the skill is:
+
+- branch policy: ask per track
+- commit policy: commit per phase
 
 ## Preview a Repository Setup
 

@@ -32,6 +32,19 @@ This workflow defines how structured work is organized when a request explicitly
 8. materialize shared context files
 9. hand off into initial track generation when appropriate
 
+## Track Git Workflow
+
+The shared Git workflow for Conductor tracks is:
+
+- Branch policy: ask at the start of each track whether to create or use a dedicated branch
+- Commit policy: use phase checkpoints as the standard commit boundary
+
+Implications:
+
+- `conductor:newTrack` should ask for the branch decision before active implementation begins
+- `conductor:implement` should treat the end of a phase as the normal moment to stage, verify, and commit work
+- `conductor:review` and `conductor:revert` should interpret commit history with this phase-based policy in mind
+
 ## Core Model
 
 Conductor work is organized as:

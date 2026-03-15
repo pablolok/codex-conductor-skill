@@ -13,11 +13,15 @@ Follow this order:
    - product guidelines
    - tech stack
    - workflow expectations
+   - git workflow policy for tracks
    - styleguide selection
-6. Produce a proposed shared context summary.
-7. Preview the live workspace artifacts that would be created or refreshed.
-8. Ask for explicit confirmation.
-9. Only after confirmation, materialize `conductor/`.
-10. When the workspace is ready, hand off into the initial track flow if the session requires it.
+6. In the workflow section, explicitly approve:
+   - branch policy: ask per track
+   - commit policy: commit per phase
+7. Produce a proposed shared context summary.
+8. Preview the live workspace artifacts that would be created or refreshed, including the approved workflow policy.
+9. Ask for explicit confirmation.
+10. Only after confirmation, materialize `conductor/`.
+11. When the workspace is ready, hand off into the initial track flow if the session requires it.
 
 Scripts support setup, but they do not define setup.

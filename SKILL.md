@@ -17,6 +17,7 @@ Use this skill only for explicit Conductor workflow requests.
 - Treat `conductor:setup` as a conversational context-building workflow, not as a bootstrap shortcut.
 - Use bundled scripts only for deterministic preview, materialization, and index synchronization after confirmation.
 - Treat `conductor/index.md` as the primary workspace index, with `tracks.md` as a compact summary view.
+- Treat the track Git workflow policy as part of the shared setup context.
 
 ## Commands
 
@@ -28,18 +29,22 @@ Use this skill only for explicit Conductor workflow requests.
 4. Detect greenfield or brownfield maturity.
 5. On brownfield, ask permission for a read-only scan before analyzing the project.
 6. Infer as much product, guideline, stack, workflow, and styleguide context as possible from the repository.
-7. Ask only for missing or preference-driven context.
-8. Produce a structured preview of the proposed live workspace artifacts before writing files.
-9. Require explicit user confirmation.
-10. Only after confirmation, run `scripts/bootstrap_conductor.py --repo <repo-root>` to materialize the agreed context.
-11. Be ready to hand off into the first track flow when appropriate.
+7. Ask only for missing or preference-driven context, including track Git workflow policy.
+8. Capture and approve:
+   - branch policy: ask per track
+   - commit policy: commit per phase
+9. Produce a structured preview of the proposed live workspace artifacts and approved workflow decisions before writing files.
+10. Require explicit user confirmation.
+11. Only after confirmation, run `scripts/bootstrap_conductor.py --repo <repo-root>` to materialize the agreed context.
+12. Be ready to hand off into the first track flow when appropriate.
 
 ### `conductor:newTrack`
 
 1. Ensure `conductor/` exists.
 2. Read `references/track_lifecycle.md`.
 3. Run `scripts/new_track.py --repo <repo-root> --title "<title>"`.
-4. Continue by refining the generated `spec.md` and `plan.md`.
+4. Ask whether to create or use a dedicated branch for that track, per the shared workflow policy.
+5. Continue by refining the generated `spec.md` and `plan.md`.
 
 ### `conductor:status`
 
@@ -54,6 +59,7 @@ Run `scripts/archive_tracks.py --repo <repo-root>`.
 These remain agent-driven workflow commands.
 
 - For `implement`, use the active track's `plan.md` and update `[ ]`, `[~]`, `[x]`, `metadata.json`, `index.md`, `tracks.md`, and `verify.md`.
+- For `implement`, treat a phase checkpoint as the standard commit boundary for the track unless the approved workflow explicitly differs.
 - For `review`, update `review.md` with findings, risks, gaps, and decision.
 - For `revert`, scope the rollback to track, phase, or task/sub-task and realign all track files and indexes.
 
