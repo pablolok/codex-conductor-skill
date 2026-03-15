@@ -20,16 +20,17 @@ This workflow defines how structured work is organized when a request explicitly
 
 ## `conductor:setup`
 
-`conductor:setup` is a conversational-first command.
+`conductor:setup` follows the official prompt-first flow:
 
-Expected flow:
-
-1. repository analysis
-2. context questions
-3. proposed shared context
-4. preview of changes
-5. explicit confirmation
-6. materialization of files
+1. audit existing Conductor artifacts
+2. detect greenfield or brownfield maturity
+3. on brownfield, request permission for a read-only scan
+4. infer product, guidelines, tech stack, and code styleguide needs
+5. ask only for gaps and preferences
+6. preview the generated workspace
+7. require explicit confirmation
+8. materialize shared context files
+9. hand off into initial track generation when appropriate
 
 ## Core Model
 
@@ -41,6 +42,8 @@ Conductor work is organized as:
 - tasks and sub-tasks inside `plan.md`
 
 Each track lives in `conductor/tracks/<track-id>/`.
+The top-level navigation index is `conductor/index.md`.
+Each track has its own navigation file at `conductor/tracks/<track-id>/index.md`.
 
 ## States and Phases
 
@@ -60,7 +63,8 @@ Expected progression:
 
 ## Source of Truth
 
-- `conductor/tracks.md` is the portfolio index.
+- `conductor/index.md` is the primary workspace index.
+- `conductor/tracks.md` is a compact compatibility summary.
 - `metadata.json` is the per-track structured state.
 - `spec.md`, `plan.md`, `review.md`, and `verify.md` are the operational source of truth.
 

@@ -38,7 +38,11 @@ Check that these files exist:
 - `SKILL.md`
 - `agents/openai.yaml`
 - `references/bootstrap.md`
-- `references/command_workflow.md`
+- `references/setup_protocol.md`
+- `references/brownfield_scan.md`
+- `references/track_lifecycle.md`
+- `references/review_revert_archive.md`
+- `references/artifact_sync.md`
 - `scripts/bootstrap_conductor.py`
 - `scripts/new_track.py`
 - `scripts/status_tracks.py`
@@ -50,11 +54,13 @@ Check that these files exist:
 
 It should:
 
-1. analyze the repository
-2. gather or refresh shared context through guided questions
-3. show a preview of the proposed context and file changes
-4. require explicit confirmation
-5. only then materialize the repo-local `conductor/` workspace
+1. detect whether the repository is greenfield or brownfield
+2. request permission for a read-only scan on brownfield repositories
+3. analyze the repository
+4. gather or refresh only the missing shared context through guided questions
+5. show a preview of the proposed live workspace artifacts
+6. require explicit confirmation
+7. only then materialize the repo-local `conductor/` workspace
 
 ## Preview a Repository Setup
 
@@ -88,6 +94,6 @@ The skill is intended for these explicit workflow triggers:
 
 ## Notes
 
-- The skill can materialize a repo-local `conductor/` workspace from bundled templates.
+- The skill can materialize a repo-local `conductor/` workspace from bundled libraries.
 - The target repository still owns its own `AGENTS.md` and project-specific rules.
 - The bootstrap script is only the final file generation step.

@@ -1,32 +1,24 @@
 # Bootstrap Contract
 
-`conductor:setup` must behave as a conversational context-building workflow followed by a deterministic materialization step.
+`scripts/bootstrap_conductor.py` is the deterministic materialization step used after the conversational setup has been approved.
 
 Expected behavior:
 
-1. Inspect the repository for:
-   - `AGENTS.md`
-   - `README.md`
-   - solution files
-   - `src/` layout
-   - existing `conductor/` files when present
-2. Build a proposed shared context in conversation.
-3. Show a preview of the files that would be created or updated.
-4. Require explicit confirmation.
-5. Generate or refresh `conductor/`.
-6. Create:
+1. Generate or refresh only live workspace artifacts:
    - `README.md`
    - `workflow.md`
    - `product.md`
    - `product-guidelines.md`
    - `tech-stack.md`
+   - `index.md`
    - `tracks.md`
-   - `code_styleguides/README.md`
-   - `templates/`
-   - `tracks/_template/`
+   - selected files in `code_styleguides/`
    - `archive/`
-7. Preserve real tracks when refreshing.
-8. Rebuild `tracks.md` from track and archive metadata.
+2. Preserve real tracks when refreshing.
+3. Remove stale generated scaffolds that should not live in the repo target, including:
+   - `conductor/templates/`
+   - `conductor/tracks/_template/`
+4. Rebuild `index.md` and `tracks.md` from track and archive metadata.
 
 The materialization step is idempotent:
 

@@ -1,6 +1,6 @@
 # Codex Conductor Skill
 
-This folder is a standalone Codex skill package for a Google Conductor-style workflow.
+This folder is a standalone Codex skill package for an official-style Google Conductor workflow.
 
 It is structured so it can be moved into its own repository without depending on this finance dashboard repository.
 
@@ -11,6 +11,7 @@ It is structured so it can be moved into its own repository without depending on
 - `references/`
 - `scripts/`
 - `assets/repo_templates/`
+- `assets/styleguides/`
 
 ## Install
 
@@ -36,13 +37,15 @@ This skill is meant for explicit workflow triggers:
 
 ## About `conductor:setup`
 
-`conductor:setup` is conversational-first.
+`conductor:setup` is conversational-first and prompt-first.
 
 It should:
 
+- detect whether the target repository is greenfield or brownfield
+- request permission for a read-only scan on brownfield repositories
 - analyze the target repository
-- gather or refresh the shared context through guided questions
-- show a preview of the proposed context and file changes
+- gather or refresh only the missing shared context through guided questions
+- show a preview of the proposed live workspace artifacts and decisions
 - require explicit confirmation
 - only then materialize the repo-local `conductor/` files
 
@@ -71,6 +74,7 @@ If you want to publish this as a separate repository:
 ## Notes
 
 - The skill is self-contained.
-- The bundled templates are generic bootstrap material.
+- Template and styleguide libraries stay inside the skill.
+- The target repository should receive only live `conductor/` artifacts, not repo-local template scaffolds.
 - The target repository still provides its own `AGENTS.md` and project-specific context.
 - The bootstrap script is not the full meaning of `conductor:setup`; it only materializes the agreed context.

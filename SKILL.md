@@ -1,8 +1,8 @@
 ---
 name: conductor
-description: Use when the user explicitly invokes `conductor:setup`, `conductor:newTrack`, `conductor:implement`, `conductor:status`, `conductor:review`, `conductor:revert`, or `conductor:archive`, or when they want a Google Conductor-style workflow in a repository. This skill bootstraps and maintains a repo-local `conductor/` workspace from bundled templates and drives track-based execution against that workspace.
+description: Use when the user explicitly invokes `conductor:setup`, `conductor:newTrack`, `conductor:implement`, `conductor:status`, `conductor:review`, `conductor:revert`, or `conductor:archive`, or when they want a Google Conductor-style workflow in a repository. This skill mirrors the official Conductor command prompts, generates only live repo artifacts, and keeps template libraries inside the skill.
 metadata:
-  short-description: Bootstrap and run a Conductor workflow
+  short-description: Run an official-style Conductor workflow
 ---
 
 # Conductor
@@ -13,29 +13,33 @@ Use this skill only for explicit Conductor workflow requests.
 
 - Treat `AGENTS.md` as repository-wide rules.
 - Treat repo-local `conductor/` as generated workflow state.
+- Mirror the official Conductor command prompts as closely as possible.
 - Treat `conductor:setup` as a conversational context-building workflow, not as a bootstrap shortcut.
-- Use bundled scripts only for deterministic preview and file materialization after confirmation.
-- Keep `tracks.md` as the portfolio index and `metadata.json` as per-track structured state.
+- Use bundled scripts only for deterministic preview, materialization, and index synchronization after confirmation.
+- Treat `conductor/index.md` as the primary workspace index, with `tracks.md` as a compact summary view.
 
 ## Commands
 
 ### `conductor:setup`
 
 1. Read `AGENTS.md`, `README.md`, and repo shape.
-2. Read `references/setup_protocol.md`.
-3. Analyze the repository and infer as much stable context as possible.
-4. Ask targeted setup questions covering product, audience, boundaries, workflow, stack, testing, and styleguide expectations.
-5. Produce a structured preview of the proposed shared context before writing files.
-6. Require explicit user confirmation.
-7. Only after confirmation, run `scripts/bootstrap_conductor.py --repo <repo-root>` to materialize the agreed context.
-
-Read `references/bootstrap.md` for the materialization contract and `references/setup_protocol.md` for the conversational setup contract.
+2. Read `references/setup_protocol.md`, `references/brownfield_scan.md`, and `references/artifact_sync.md`.
+3. Audit existing `conductor/` artifacts and determine whether setup should resume or start fresh.
+4. Detect greenfield or brownfield maturity.
+5. On brownfield, ask permission for a read-only scan before analyzing the project.
+6. Infer as much product, guideline, stack, workflow, and styleguide context as possible from the repository.
+7. Ask only for missing or preference-driven context.
+8. Produce a structured preview of the proposed live workspace artifacts before writing files.
+9. Require explicit user confirmation.
+10. Only after confirmation, run `scripts/bootstrap_conductor.py --repo <repo-root>` to materialize the agreed context.
+11. Be ready to hand off into the first track flow when appropriate.
 
 ### `conductor:newTrack`
 
 1. Ensure `conductor/` exists.
-2. Run `scripts/new_track.py --repo <repo-root> --title "<title>"`.
-3. Continue by refining the generated `spec.md`.
+2. Read `references/track_lifecycle.md`.
+3. Run `scripts/new_track.py --repo <repo-root> --title "<title>"`.
+4. Continue by refining the generated `spec.md` and `plan.md`.
 
 ### `conductor:status`
 
@@ -49,15 +53,17 @@ Run `scripts/archive_tracks.py --repo <repo-root>`.
 
 These remain agent-driven workflow commands.
 
-- For `implement`, use the active track's `plan.md` and update `[ ]`, `[~]`, `[x]`, `metadata.json`, `tracks.md`, and `verify.md`.
+- For `implement`, use the active track's `plan.md` and update `[ ]`, `[~]`, `[x]`, `metadata.json`, `index.md`, `tracks.md`, and `verify.md`.
 - For `review`, update `review.md` with findings, risks, gaps, and decision.
 - For `revert`, scope the rollback to track, phase, or task/sub-task and realign all track files and indexes.
 
-Read `references/command_workflow.md` when handling these commands.
+Read `references/track_lifecycle.md`, `references/review_revert_archive.md`, and `references/artifact_sync.md` when handling these commands.
 
 ## Files to keep aligned
 
+- `conductor/index.md`
 - `conductor/tracks.md`
+- `conductor/tracks/<track-id>/index.md`
 - `conductor/tracks/<track-id>/metadata.json`
 - `conductor/tracks/<track-id>/spec.md`
 - `conductor/tracks/<track-id>/plan.md`

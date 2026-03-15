@@ -6,14 +6,13 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
-
-def read_text(path: Path) -> str:
-    return path.read_text(encoding="utf-8") if path.exists() else ""
-
-
-def write_text(path: Path, content: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content.rstrip() + "\n", encoding="utf-8")
+from conductor_fs import (
+    load_template,
+    read_text,
+    refresh_portfolio_indexes,
+    refresh_track_index,
+    write_text,
+)
 
 
 def slugify(text: str) -> str:
@@ -37,52 +36,30 @@ def next_track_id(tracks_dir: Path, archive_dir: Path) -> str:
     return f"track-{max_number + 1:03d}"
 
 
-def refresh_tracks_md(conductor_dir: Path) -> None:
-    active = []
-    archived = []
-    for child in sorted((conductor_dir / "tracks").iterdir()):
-        if not child.is_dir() or child.name == "_template":
-            continue
-        metadata = child / "metadata.json"
-        if metadata.exists():
-            active.append(json.loads(read_text(metadata)))
-    if (conductor_dir / "archive").exists():
-        for child in sorted((conductor_dir / "archive").iterdir()):
-            if not child.is_dir():
-                continue
-            metadata = child / "metadata.json"
-            if metadata.exists():
-                archived.append(json.loads(read_text(metadata)))
-
-    def format_lines(items: list[dict], empty_text: str) -> str:
-        if not items:
-            return empty_text
-        return "\n".join(
-            f"- `{item['id']}` | {item['title']} | `{item['status']}` | phase `{item['phase']}` | {item['activeTask']}"
-            for item in items
-        )
-
-    content = "\n".join(
-        [
-            "# Tracks",
-            "",
-            "This file is the canonical markdown index of Conductor tracks in this repository.",
-            "",
-            "## Active Tracks",
-            "",
-            format_lines(active, "No active tracks currently registered."),
-            "",
-            "## Archived Tracks",
-            "",
-            format_lines(archived, "No archived Conductor tracks currently registered in the canonical `conductor/` model."),
-            "",
-            "## Notes",
-            "",
-            "- `conductor/tracks/_template/` is a scaffold, not an active track.",
-            "- Per-track structured state lives in each track's `metadata.json`.",
-        ]
-    )
-    write_text(conductor_dir / "tracks.md", content)
+def render_track_files(template_base: Path, metadata: dict, title: str) -> dict[str, str]:
+    replacements = {
+        "{{TRACK_ID}}": metadata["id"],
+        "{{TRACK_TITLE}}": metadata["title"],
+        "{{TRACK_STATUS}}": metadata["status"],
+        "{{TRACK_PHASE}}": metadata["phase"],
+        "{{TRACK_ACTIVE_TASK}}": metadata["activeTask"],
+        "{{TRACK_PATH}}": metadata["path"],
+        "{{TRACK_REQUEST}}": title,
+    }
+    templates = {
+        "spec.md": "track_spec.md.tmpl",
+        "plan.md": "track_plan.md.tmpl",
+        "review.md": "track_review.md.tmpl",
+        "verify.md": "track_verify.md.tmpl",
+        "index.md": "track_index.md.tmpl",
+    }
+    rendered = {}
+    for target, template_name in templates.items():
+        content = load_template(template_base, template_name)
+        for source, value in replacements.items():
+            content = content.replace(source, value)
+        rendered[target] = content.rstrip() + "\n"
+    return rendered
 
 
 def main() -> None:
@@ -93,9 +70,10 @@ def main() -> None:
 
     repo = Path(args.repo).resolve()
     conductor_dir = repo / "conductor"
-    track_template_dir = conductor_dir / "tracks" / "_template"
     tracks_dir = conductor_dir / "tracks"
     archive_dir = conductor_dir / "archive"
+    template_base = Path(__file__).resolve().parents[1]
+
     if not conductor_dir.exists():
         raise SystemExit("conductor/ does not exist. Run conductor:setup first.")
 
@@ -117,17 +95,15 @@ def main() -> None:
         "archivedAt": None,
         "path": f"conductor/tracks/{directory_name}",
         "relatedTrackIds": [],
-        "activeTask": "Refine the initial spec",
+        "activeTask": "Draft and confirm the track spec",
     }
+
     write_text(target_dir / "metadata.json", json.dumps(metadata, indent=2))
+    for relative_target, content in render_track_files(template_base, metadata, args.title).items():
+        write_text(target_dir / relative_target, content)
 
-    for filename in ("spec.md", "plan.md", "review.md", "verify.md"):
-        content = read_text(track_template_dir / filename)
-        if filename == "spec.md":
-            content = content.replace("Replace with the user request for the track.", args.title)
-        write_text(target_dir / filename, content)
-
-    refresh_tracks_md(conductor_dir)
+    refresh_track_index(target_dir, template_base)
+    refresh_portfolio_indexes(conductor_dir, template_base)
     print(str(target_dir))
 
 

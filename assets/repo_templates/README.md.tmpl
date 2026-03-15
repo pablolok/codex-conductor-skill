@@ -1,27 +1,25 @@
 # Conductor in This Repository
 
-This repository uses a Google Conductor-style workflow for structured work.
+This repository uses a prompt-first Google Conductor-style workflow for structured work.
 
 `AGENTS.md` defines repository-wide engineering rules, validation requirements, and coding constraints.
 
-`conductor/` defines the workflow, project context, track structure, and the command semantics used when work is explicitly performed through Conductor.
+`conductor/` is the generated workspace used when work is explicitly handled through Conductor.
 
-## What Conductor Is
+## Core Files
 
-Conductor is a context-driven development workflow built around:
-
-- project context files shared across work
-- explicit track creation and progression
-- `spec -> confirm -> plan -> implement -> review -> verify -> archive`
-- markdown-first planning with structured per-track metadata
-- resume and checkpoint-friendly work organization
-
-In this repository, Conductor is implemented as a documented process and file structure backed by a Codex skill.
+- `workflow.md`
+- `product.md`
+- `product-guidelines.md`
+- `tech-stack.md`
+- `index.md`
+- `tracks.md`
+- `code_styleguides/`
 
 ## Relationship Between `AGENTS.md` and `conductor/`
 
-- `AGENTS.md` answers: how code must be written and verified in this repository.
-- `conductor/workflow.md` answers: how structured work must be organized and progressed.
+- `AGENTS.md` defines how code must be written and verified.
+- `conductor/` defines how structured work is discovered, planned, tracked, reviewed, and archived.
 - When a request is handled through Conductor, both must be followed.
 
 ## Supported Conductor Commands
@@ -36,12 +34,16 @@ In this repository, Conductor is implemented as a documented process and file st
 
 ## About `conductor:setup`
 
-`conductor:setup` is conversational-first.
+`conductor:setup` is a conversational workflow, not just a bootstrap.
 
-It should:
+Expected behavior:
 
-- analyze the repository
-- gather or refresh the shared context through guided questions
-- show a preview of the proposed context and file changes
-- require explicit confirmation
-- only then materialize the repo-local `conductor/` files
+1. detect greenfield or brownfield state
+2. request permission for brownfield read-only analysis
+3. infer as much project context as possible from the repository
+4. ask only for missing or preference-driven context
+5. preview the proposed Conductor workspace
+6. require explicit confirmation
+7. materialize the workspace and prepare the first track flow
+
+Only live workflow artifacts are written into the repository. Template libraries stay inside the skill.
