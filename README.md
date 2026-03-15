@@ -46,6 +46,7 @@ It should:
 - analyze the target repository
 - gather or refresh only the missing shared context through guided questions
 - define the shared Git workflow for tracks
+- ask for and record the repository coverage target
 - show a preview of the proposed live workspace artifacts and decisions
 - require explicit confirmation
 - only then materialize the repo-local `conductor/` files
@@ -54,6 +55,11 @@ The shared Git workflow currently encoded by the skill is:
 
 - ask per track whether to create or use a dedicated branch
 - use phase checkpoints as the standard commit boundary
+
+The shared quality workflow currently encoded by the skill is:
+
+- ask for the repository coverage target during setup
+- in this repository, the approved target is 100%
 
 ## Materialization Script
 

@@ -18,5 +18,6 @@ Lifecycle expectations:
 3. The branch decision should be reflected in the track's working context or early plan notes.
 4. `conductor:implement` progresses the next task from `plan.md`.
 5. The standard commit boundary is the end of a phase, not every individual task.
-6. `conductor:review` records findings and a decision in `review.md`.
-7. `conductor:archive` moves only completed tracks into `conductor/archive/`.
+6. Verification should be planned against the approved repository coverage target.
+7. `conductor:review` records findings and a decision in `review.md`.
+8. `conductor:archive` moves only completed tracks into `conductor/archive/`.

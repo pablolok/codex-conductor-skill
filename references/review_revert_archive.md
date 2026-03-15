@@ -4,6 +4,7 @@
 
 - Review against `spec.md`, `plan.md`, `AGENTS.md`, and executed verification.
 - Consider whether the recorded commit history matches the shared commit policy for phase checkpoints.
+- Consider whether the verification evidence is consistent with the approved coverage target.
 - Record findings, risks, gaps, and decision in `review.md`.
 
 ## Revert

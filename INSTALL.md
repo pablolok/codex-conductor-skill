@@ -59,7 +59,8 @@ It should:
 3. analyze the repository
 4. gather or refresh only the missing shared context through guided questions
 5. define the shared Git workflow for tracks
-6. show a preview of the proposed live workspace artifacts and workflow decisions
+6. ask for and record the repository coverage target
+7. show a preview of the proposed live workspace artifacts and workflow decisions
 6. require explicit confirmation
 7. only then materialize the repo-local `conductor/` workspace
 
@@ -67,6 +68,11 @@ The shared Git workflow encoded by the skill is:
 
 - branch policy: ask per track
 - commit policy: commit per phase
+
+The shared quality workflow encoded by the skill is:
+
+- coverage target is explicitly requested during setup
+- for this repository, the target is 100%
 
 ## Preview a Repository Setup
 

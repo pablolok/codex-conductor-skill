@@ -29,10 +29,11 @@ Use this skill only for explicit Conductor workflow requests.
 4. Detect greenfield or brownfield maturity.
 5. On brownfield, ask permission for a read-only scan before analyzing the project.
 6. Infer as much product, guideline, stack, workflow, and styleguide context as possible from the repository.
-7. Ask only for missing or preference-driven context, including track Git workflow policy.
+7. Ask only for missing or preference-driven context, including track Git workflow policy and coverage target.
 8. Capture and approve:
    - branch policy: ask per track
    - commit policy: commit per phase
+   - coverage target for the repository workflow
 9. Produce a structured preview of the proposed live workspace artifacts and approved workflow decisions before writing files.
 10. Require explicit user confirmation.
 11. Only after confirmation, run `scripts/bootstrap_conductor.py --repo <repo-root>` to materialize the agreed context.
@@ -60,6 +61,7 @@ These remain agent-driven workflow commands.
 
 - For `implement`, use the active track's `plan.md` and update `[ ]`, `[~]`, `[x]`, `metadata.json`, `index.md`, `tracks.md`, and `verify.md`.
 - For `implement`, treat a phase checkpoint as the standard commit boundary for the track unless the approved workflow explicitly differs.
+- For `implement`, keep verification aligned with the approved repository coverage target.
 - For `review`, update `review.md` with findings, risks, gaps, and decision.
 - For `revert`, scope the rollback to track, phase, or task/sub-task and realign all track files and indexes.
 

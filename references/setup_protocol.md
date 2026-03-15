@@ -14,10 +14,12 @@ Follow this order:
    - tech stack
    - workflow expectations
    - git workflow policy for tracks
+   - coverage target
    - styleguide selection
 6. In the workflow section, explicitly approve:
    - branch policy: ask per track
    - commit policy: commit per phase
+   - coverage target: ask explicitly and record the approved threshold
 7. Produce a proposed shared context summary.
 8. Preview the live workspace artifacts that would be created or refreshed, including the approved workflow policy.
 9. Ask for explicit confirmation.

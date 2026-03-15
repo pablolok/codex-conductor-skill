@@ -45,6 +45,19 @@ Implications:
 - `conductor:implement` should treat the end of a phase as the normal moment to stage, verify, and commit work
 - `conductor:review` and `conductor:revert` should interpret commit history with this phase-based policy in mind
 
+## Quality Workflow
+
+The shared quality workflow for Conductor tracks is:
+
+- Coverage target: 100%
+- Verification expectations inherit the repository rules from `AGENTS.md`
+
+Implications:
+
+- `conductor:setup` should explicitly ask for and confirm the coverage target
+- `conductor:implement` should plan verification against the approved coverage target
+- `conductor:review` should treat gaps against the approved coverage target as review findings
+
 ## Core Model
 
 Conductor work is organized as:
