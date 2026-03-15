@@ -100,15 +100,7 @@ def refresh_tracks_index(conductor_dir: Path, template_base: Path) -> None:
     write_text(conductor_dir / "tracks.md", content)
 
 
-def ensure_shared_context(repo: Path, template_base: Path) -> None:
-    conductor_dir = repo / "conductor"
-    conductor_dir.mkdir(parents=True, exist_ok=True)
-    (conductor_dir / "archive").mkdir(parents=True, exist_ok=True)
-    (conductor_dir / "code_styleguides").mkdir(parents=True, exist_ok=True)
-    (conductor_dir / "templates").mkdir(parents=True, exist_ok=True)
-    (conductor_dir / "tracks").mkdir(parents=True, exist_ok=True)
-    (conductor_dir / "tracks" / "_template").mkdir(parents=True, exist_ok=True)
-
+def render_shared_context(repo: Path, template_base: Path) -> dict[str, str]:
     replacements = {
         "{{PRODUCT_NAME}}": infer_product_name(repo),
         "{{SOLUTION_FILE}}": infer_solution_file(repo),
@@ -135,22 +127,52 @@ def ensure_shared_context(repo: Path, template_base: Path) -> None:
         "tracks/_template/verify.md": "track_verify.md.tmpl",
     }
 
+    rendered: dict[str, str] = {}
     for relative_target, template_name in shared_files.items():
         content = load_template(template_base, template_name)
         for source, target in replacements.items():
             content = content.replace(source, target)
-        write_text(conductor_dir / relative_target, content)
+        rendered[relative_target] = content.rstrip() + "\n"
+    rendered["archive/.gitkeep"] = ""
+    return rendered
 
-    write_text(conductor_dir / "archive" / ".gitkeep", "")
+
+def ensure_shared_context(repo: Path, template_base: Path) -> None:
+    conductor_dir = repo / "conductor"
+    conductor_dir.mkdir(parents=True, exist_ok=True)
+    (conductor_dir / "archive").mkdir(parents=True, exist_ok=True)
+    (conductor_dir / "code_styleguides").mkdir(parents=True, exist_ok=True)
+    (conductor_dir / "templates").mkdir(parents=True, exist_ok=True)
+    (conductor_dir / "tracks").mkdir(parents=True, exist_ok=True)
+    (conductor_dir / "tracks" / "_template").mkdir(parents=True, exist_ok=True)
+
+    for relative_target, content in render_shared_context(repo, template_base).items():
+        write_text(conductor_dir / relative_target, content)
     refresh_tracks_index(conductor_dir, template_base)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True)
+    parser.add_argument("--preview", action="store_true")
     args = parser.parse_args()
     repo = Path(args.repo).resolve()
     template_base = Path(__file__).resolve().parents[1]
+    if args.preview:
+        conductor_dir = repo / "conductor"
+        rendered = render_shared_context(repo, template_base)
+        preview = {
+            "repo": str(repo),
+            "conductor_exists": conductor_dir.exists(),
+            "files": sorted(rendered.keys()),
+            "context": {
+                "product_name": infer_product_name(repo),
+                "solution_file": infer_solution_file(repo),
+                "source_roots": infer_source_roots(repo),
+            },
+        }
+        print(json.dumps(preview, indent=2))
+        return
     ensure_shared_context(repo, template_base)
     print(f"Bootstrapped conductor workspace in {repo / 'conductor'}")
 

@@ -44,15 +44,35 @@ Check that these files exist:
 - `scripts/status_tracks.py`
 - `scripts/archive_tracks.py`
 
-## Bootstrap a Repository
+## How `conductor:setup` Should Behave
 
-Run the bootstrap script against a target repository:
+`conductor:setup` is not just a bootstrap command.
+
+It should:
+
+1. analyze the repository
+2. gather or refresh shared context through guided questions
+3. show a preview of the proposed context and file changes
+4. require explicit confirmation
+5. only then materialize the repo-local `conductor/` workspace
+
+## Preview a Repository Setup
+
+Use this to inspect the materialization preview support:
+
+```powershell
+python scripts/bootstrap_conductor.py --repo <repo-root> --preview
+```
+
+## Materialize a Repository Context
+
+Run the materialization step against a target repository:
 
 ```powershell
 python scripts/bootstrap_conductor.py --repo <repo-root>
 ```
 
-This recreates or refreshes the repo-local `conductor/` directory.
+This recreates or refreshes the repo-local `conductor/` directory after the conversational setup has been confirmed.
 
 ## Supported Commands
 
@@ -68,5 +88,6 @@ The skill is intended for these explicit workflow triggers:
 
 ## Notes
 
-- The skill bootstraps a repo-local `conductor/` workspace from bundled templates.
+- The skill can materialize a repo-local `conductor/` workspace from bundled templates.
 - The target repository still owns its own `AGENTS.md` and project-specific rules.
+- The bootstrap script is only the final file generation step.

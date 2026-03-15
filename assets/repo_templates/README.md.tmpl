@@ -16,7 +16,7 @@ Conductor is a context-driven development workflow built around:
 - markdown-first planning with structured per-track metadata
 - resume and checkpoint-friendly work organization
 
-In this repository, Conductor is implemented as a documented process and file structure backed by a Codex skill bootstrap.
+In this repository, Conductor is implemented as a documented process and file structure backed by a Codex skill.
 
 ## Relationship Between `AGENTS.md` and `conductor/`
 
@@ -33,3 +33,15 @@ In this repository, Conductor is implemented as a documented process and file st
 - `conductor:review`
 - `conductor:revert`
 - `conductor:archive`
+
+## About `conductor:setup`
+
+`conductor:setup` is conversational-first.
+
+It should:
+
+- analyze the repository
+- gather or refresh the shared context through guided questions
+- show a preview of the proposed context and file changes
+- require explicit confirmation
+- only then materialize the repo-local `conductor/` files

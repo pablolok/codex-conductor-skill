@@ -34,12 +34,30 @@ This skill is meant for explicit workflow triggers:
 - `conductor:revert`
 - `conductor:archive`
 
-## Bootstrap Script
+## About `conductor:setup`
 
-The bootstrap script can recreate a repo-local `conductor/` workspace from bundled templates:
+`conductor:setup` is conversational-first.
+
+It should:
+
+- analyze the target repository
+- gather or refresh the shared context through guided questions
+- show a preview of the proposed context and file changes
+- require explicit confirmation
+- only then materialize the repo-local `conductor/` files
+
+## Materialization Script
+
+The bootstrap script supports the final materialization step:
 
 ```powershell
 python scripts/bootstrap_conductor.py --repo <repo-root>
+```
+
+Preview support:
+
+```powershell
+python scripts/bootstrap_conductor.py --repo <repo-root> --preview
 ```
 
 ## Publish As Its Own Repo
@@ -55,3 +73,4 @@ If you want to publish this as a separate repository:
 - The skill is self-contained.
 - The bundled templates are generic bootstrap material.
 - The target repository still provides its own `AGENTS.md` and project-specific context.
+- The bootstrap script is not the full meaning of `conductor:setup`; it only materializes the agreed context.

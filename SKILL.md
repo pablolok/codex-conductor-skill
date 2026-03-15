@@ -13,7 +13,8 @@ Use this skill only for explicit Conductor workflow requests.
 
 - Treat `AGENTS.md` as repository-wide rules.
 - Treat repo-local `conductor/` as generated workflow state.
-- Use bundled scripts for deterministic file creation and refresh where possible.
+- Treat `conductor:setup` as a conversational context-building workflow, not as a bootstrap shortcut.
+- Use bundled scripts only for deterministic preview and file materialization after confirmation.
 - Keep `tracks.md` as the portfolio index and `metadata.json` as per-track structured state.
 
 ## Commands
@@ -21,10 +22,14 @@ Use this skill only for explicit Conductor workflow requests.
 ### `conductor:setup`
 
 1. Read `AGENTS.md`, `README.md`, and repo shape.
-2. Run `scripts/bootstrap_conductor.py --repo <repo-root>`.
-3. Confirm that `conductor/` now exists with shared context, templates, `_template/`, and archive scaffold.
+2. Read `references/setup_protocol.md`.
+3. Analyze the repository and infer as much stable context as possible.
+4. Ask targeted setup questions covering product, audience, boundaries, workflow, stack, testing, and styleguide expectations.
+5. Produce a structured preview of the proposed shared context before writing files.
+6. Require explicit user confirmation.
+7. Only after confirmation, run `scripts/bootstrap_conductor.py --repo <repo-root>` to materialize the agreed context.
 
-Read `references/bootstrap.md` before running setup if you need the detailed setup contract.
+Read `references/bootstrap.md` for the materialization contract and `references/setup_protocol.md` for the conversational setup contract.
 
 ### `conductor:newTrack`
 

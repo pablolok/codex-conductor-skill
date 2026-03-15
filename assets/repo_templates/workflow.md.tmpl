@@ -18,6 +18,19 @@ This workflow defines how structured work is organized when a request explicitly
 - `conductor:revert`
 - `conductor:archive`
 
+## `conductor:setup`
+
+`conductor:setup` is a conversational-first command.
+
+Expected flow:
+
+1. repository analysis
+2. context questions
+3. proposed shared context
+4. preview of changes
+5. explicit confirmation
+6. materialization of files
+
 ## Core Model
 
 Conductor work is organized as:
@@ -52,3 +65,5 @@ Expected progression:
 - `spec.md`, `plan.md`, `review.md`, and `verify.md` are the operational source of truth.
 
 If they diverge, operational track files drive the reconciliation.
+
+No file write should happen before setup confirmation.
