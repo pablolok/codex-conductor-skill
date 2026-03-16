@@ -17,6 +17,7 @@
 ## Archive
 
 - Archive only tracks whose `status` is `done`.
-- Update `status`, `phase`, and `archivedAt`.
-- Move the track directory to `conductor/archive/`.
+- Move the track directory to `conductor/archive/` before finalizing archived metadata so partial archive state is avoided if the move fails.
+- Update `status`, `phase`, `archivedAt`, and the stored track path after the move succeeds.
+- Ensure no archived track directory remains under `conductor/tracks/`.
 - Refresh `conductor/index.md` and `conductor/tracks.md`.

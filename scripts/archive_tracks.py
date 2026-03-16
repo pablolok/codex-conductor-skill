@@ -16,8 +16,11 @@ def main() -> None:
 
     repo = Path(args.repo).resolve()
     conductor = repo / "conductor"
+    archive_dir = conductor / "archive"
     template_base = Path(__file__).resolve().parents[1]
     archived_any = False
+
+    archive_dir.mkdir(parents=True, exist_ok=True)
 
     for child in sorted((conductor / "tracks").iterdir()):
         if not child.is_dir():
@@ -30,19 +33,25 @@ def main() -> None:
         if metadata.get("status") != "done":
             continue
 
-        metadata["status"] = "archived"
-        metadata["phase"] = "archived"
-        metadata["archivedAt"] = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-        write_text(metadata_path, json.dumps(metadata, indent=2))
-        refresh_track_index(child, template_base)
+        archived_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+        target_dir = archive_dir / child.name
+        if target_dir.exists():
+            raise SystemExit(f"Could not archive '{child.name}' because '{target_dir}' already exists.")
         try:
-            shutil.move(str(child), str(conductor / "archive" / child.name))
+            shutil.move(str(child), str(target_dir))
         except PermissionError as exc:
             raise SystemExit(
                 f"Could not archive '{child.name}' because the track directory is locked by another process. "
                 "Close any open editor tabs or file handles and retry."
             ) from exc
-        refresh_track_index(conductor / "archive" / child.name, template_base)
+
+        metadata["status"] = "archived"
+        metadata["phase"] = "archived"
+        metadata["archivedAt"] = archived_at
+        metadata["updatedAt"] = archived_at
+        metadata["path"] = f"conductor/archive/{target_dir.name}"
+        write_text(target_dir / "metadata.json", json.dumps(metadata, indent=2))
+        refresh_track_index(target_dir, template_base)
         archived_any = True
 
     refresh_portfolio_indexes(conductor, template_base)

@@ -66,7 +66,8 @@ It should:
 
 The shared Git workflow encoded by the skill is:
 
-- branch policy: ask per track
+- branch policy: every track must use a dedicated branch before any track files are created
+- shared branch hygiene: `main` and other shared branches must not contain unfinished tracks from another branch
 - commit policy: commit per phase
 
 Track plans are expected to use a hybrid format:

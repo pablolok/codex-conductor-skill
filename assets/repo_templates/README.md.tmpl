@@ -50,7 +50,8 @@ Only live workflow artifacts are written into the repository. Template libraries
 
 The setup also defines the shared Git workflow for tracks:
 
-- ask per track whether to create or use a dedicated branch
+- require a dedicated branch for every track before any track files are created
+- keep unfinished tracks off `main` and other shared branches
 - use phase checkpoints as the standard commit boundary
 
 The setup also defines the shared quality workflow for tracks:

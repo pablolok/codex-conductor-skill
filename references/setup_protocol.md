@@ -13,11 +13,12 @@ Follow this order:
    - product guidelines
    - tech stack
    - workflow expectations
-   - git workflow policy for tracks
+   - track branch naming or branch workflow details if the repository needs them
    - coverage target
    - styleguide selection
 6. In the workflow section, explicitly approve:
-   - branch policy: ask per track
+   - branch policy: every track must use a dedicated branch, and that branch must be created or selected before any track files are generated
+   - shared branch hygiene: `main` or other shared branches must not contain unfinished tracks that belong to another branch
    - commit policy: commit per phase
    - coverage target: ask explicitly and record the approved threshold
 7. Produce a proposed shared context summary.

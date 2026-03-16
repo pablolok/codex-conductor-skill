@@ -31,7 +31,7 @@ Use this skill only for explicit Conductor workflow requests.
 6. Infer as much product, guideline, stack, workflow, and styleguide context as possible from the repository.
 7. Ask only for missing or preference-driven context, including track Git workflow policy and coverage target.
 8. Capture and approve:
-   - branch policy: ask per track
+   - branch policy: dedicated branch required for every track; create or switch to that branch before track artifacts are generated
    - commit policy: commit per phase
    - coverage target for the repository workflow
 9. Produce a structured preview of the proposed live workspace artifacts and approved workflow decisions before writing files.
@@ -43,10 +43,11 @@ Use this skill only for explicit Conductor workflow requests.
 
 1. Ensure `conductor/` exists.
 2. Read `references/track_lifecycle.md`.
-3. Run `scripts/new_track.py --repo <repo-root> --title "<title>"`.
-4. Ask whether to create or use a dedicated branch for that track, per the shared workflow policy.
-5. Continue by refining the generated `spec.md` and `plan.md`.
-6. Keep `plan.md` in the hybrid format: phases as workflow checkpoints, numbered steps inside each phase, and `[ ]`, `[~]`, `[x]` markers on each step.
+3. Determine the dedicated branch for the track and create or switch to it before generating any track artifacts.
+4. Do not leave unfinished track artifacts on `main` or another shared branch; if the current branch is wrong, stop and correct the branch first.
+5. Run `scripts/new_track.py --repo <repo-root> --title "<title>"`.
+6. Continue by refining the generated `spec.md` and `plan.md`.
+7. Keep `plan.md` in the hybrid format: phases as workflow checkpoints, numbered steps inside each phase, and `[ ]`, `[~]`, `[x]` markers on each step.
 
 ### `conductor:status`
 
@@ -54,7 +55,7 @@ Run `scripts/status_tracks.py --repo <repo-root>` and summarize the result.
 
 ### `conductor:archive`
 
-Run `scripts/archive_tracks.py --repo <repo-root>`.
+Run `scripts/archive_tracks.py --repo <repo-root>` and ensure archived tracks are physically moved from `conductor/tracks/` to `conductor/archive/`.
 
 ### `conductor:implement`, `conductor:review`, `conductor:revert`
 

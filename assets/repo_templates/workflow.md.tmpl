@@ -36,12 +36,14 @@ This workflow defines how structured work is organized when a request explicitly
 
 The shared Git workflow for Conductor tracks is:
 
-- Branch policy: ask at the start of each track whether to create or use a dedicated branch
+- Branch policy: every track must use a dedicated branch, and that branch must be created or selected before any track files are generated
+- Shared branch hygiene: `main` and other shared branches must not contain unfinished tracks that belong to another branch
 - Commit policy: use phase checkpoints as the standard commit boundary
 
 Implications:
 
-- `conductor:newTrack` should ask for the branch decision before active implementation begins
+- `conductor:newTrack` should create or switch to the track branch before generating track artifacts
+- `conductor:newTrack` should stop if the current branch would leave unfinished track artifacts on `main` or another shared branch
 - `conductor:implement` should treat the end of a phase as the normal moment to stage, verify, and commit work
 - `conductor:review` and `conductor:revert` should interpret commit history with this phase-based policy in mind
 

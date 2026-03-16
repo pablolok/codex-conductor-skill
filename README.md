@@ -53,7 +53,8 @@ It should:
 
 The shared Git workflow currently encoded by the skill is:
 
-- ask per track whether to create or use a dedicated branch
+- require a dedicated branch for every track before any track files are created
+- keep unfinished tracks off `main` and other shared branches
 - use phase checkpoints as the standard commit boundary
 
 The shared quality workflow currently encoded by the skill is:
