@@ -227,6 +227,37 @@ class ImplementRuntimeTests(unittest.TestCase):
             self.assertEqual(state["stage"], "cleanup")
             self.assertIn("Latest Track Sync", (repo / "conductor" / "product.md").read_text(encoding="utf-8"))
 
+    def test_cleanup_execute_archive_runs_cleanup_helper(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            write_track(repo)
+            init_git_repo(repo)
+
+            state = advance_implement_runtime(
+                repo,
+                "sample_20260323",
+                "cleanup_execute",
+                cleanup_action="archive",
+            )
+
+            self.assertEqual(state["stage"], "completed")
+            self.assertEqual(state["cleanup_result"]["action"], "archive")
+
+    def test_cleanup_execute_delete_requires_confirmation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            write_track(repo)
+
+            state = advance_implement_runtime(
+                repo,
+                "sample_20260323",
+                "cleanup_execute",
+                cleanup_action="delete",
+            )
+
+            self.assertEqual(state["stage"], "confirm_delete")
+            self.assertEqual(state["confirmation"]["type"], "yesno")
+
 
 if __name__ == "__main__":
     unittest.main()

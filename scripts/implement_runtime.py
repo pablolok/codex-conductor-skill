@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 
 from cleanup_flow import build_cleanup_flow
+from cleanup_track import execute_cleanup_action
 from conductor_fs import (
     find_first_incomplete_task,
     find_in_progress_task,
@@ -199,6 +200,8 @@ def advance_implement_runtime(
     verify_message: str | None = None,
     paths: list[str] | None = None,
     approved_paths: list[str] | None = None,
+    cleanup_action: str | None = None,
+    confirmed: bool = False,
 ) -> dict[str, object]:
     conductor_dir = repo / "conductor"
     require_canonical_workspace(conductor_dir)
@@ -366,6 +369,25 @@ def advance_implement_runtime(
             "cleanup": build_cleanup_flow(repo, track_ref),
         }
 
+    if action == "cleanup_execute":
+        if not track_ref:
+            raise SystemExit("cleanup_execute requires a track.")
+        if cleanup_action not in {"archive", "delete", "skip"}:
+            raise SystemExit("cleanup_execute requires --cleanup-action archive|delete|skip.")
+        if cleanup_action == "delete" and not confirmed:
+            return {
+                "stage": "confirm_delete",
+                "confirmation": {
+                    "header": "Confirm",
+                    "question": "WARNING: This is an irreversible deletion. Do you want to proceed?",
+                    "type": "yesno",
+                },
+            }
+        return {
+            "stage": "completed",
+            "cleanup_result": execute_cleanup_action(repo, track_ref, cleanup_action, commit_changes=cleanup_action != "skip"),
+        }
+
     raise SystemExit(f"Unsupported implement runtime action '{action}'.")
 
 
@@ -373,7 +395,11 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True)
     parser.add_argument("--track")
-    parser.add_argument("--action", choices=["start", "complete_task", "checkpoint_phase", "commit_task", "doc_sync_execute"], required=True)
+    parser.add_argument(
+        "--action",
+        choices=["start", "complete_task", "checkpoint_phase", "commit_task", "doc_sync_execute", "cleanup_execute"],
+        required=True,
+    )
     parser.add_argument("--sha")
     parser.add_argument("--code-message")
     parser.add_argument("--plan-message")
@@ -381,6 +407,8 @@ def main() -> None:
     parser.add_argument("--verify-message")
     parser.add_argument("--paths", nargs="*")
     parser.add_argument("--approved-paths", nargs="*")
+    parser.add_argument("--cleanup-action", choices=["archive", "delete", "skip"])
+    parser.add_argument("--confirmed", action="store_true")
     args = parser.parse_args()
 
     repo = Path(args.repo).resolve()
@@ -397,6 +425,8 @@ def main() -> None:
                 args.verify_message,
                 args.paths,
                 args.approved_paths,
+                args.cleanup_action,
+                args.confirmed,
             ),
             indent=2,
         )
