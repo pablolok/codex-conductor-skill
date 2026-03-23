@@ -10,6 +10,17 @@ from conductor_fs import require_canonical_workspace
 from review_flow import build_review_flow
 
 
+def has_worktree_changes(repo: Path) -> bool:
+    result = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    return bool(result.stdout.strip())
+
+
 def run_review_track(repo: Path, track_ref: str, prepare: bool = False) -> dict[str, object]:
     command = [
         "python",
@@ -58,8 +69,29 @@ def advance_review_runtime(repo: Path, track_ref: str | None, action: str) -> di
         }
 
     if action == "complete":
+        if has_worktree_changes(repo):
+            if track_ref:
+                return {
+                    "stage": "commit_review_changes",
+                    "commit_tracking_confirmation": {
+                        "header": "Commit & Track",
+                        "question": "I've detected uncommitted changes from the review process. Should I commit these and update the track plan?",
+                        "type": "yesno",
+                    },
+                }
+            return {
+                "stage": "commit_review_changes",
+                "commit_confirmation": {
+                    "header": "Commit Changes",
+                    "question": "I've detected uncommitted changes. Should I commit them?",
+                    "type": "yesno",
+                },
+            }
         if not track_ref:
-            raise SystemExit("A track is required to complete review cleanup.")
+            return {
+                "stage": "completed",
+                "message": "Review complete with no remaining cleanup because no specific track was in scope.",
+            }
         return {
             "stage": "cleanup",
             "cleanup": build_cleanup_flow(repo, track_ref),

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,6 +14,9 @@ from review_runtime import advance_review_runtime  # noqa: E402
 
 
 def write_track(repo: Path) -> Path:
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.name", "Test User"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True, capture_output=True)
     conductor_dir = repo / "conductor"
     track_dir = conductor_dir / "tracks" / "sample_20260323"
     track_dir.mkdir(parents=True)
@@ -38,6 +42,8 @@ def write_track(repo: Path) -> Path:
     (track_dir / "index.md").write_text("- [Specification](./spec.md)\n- [Implementation Plan](./plan.md)\n", encoding="utf-8")
     (track_dir / "review.md").write_text("# Review\n", encoding="utf-8")
     (track_dir / "verify.md").write_text("# Verify\n", encoding="utf-8")
+    subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "test setup"], cwd=repo, check=True, capture_output=True)
     return track_dir
 
 
@@ -89,6 +95,28 @@ class ReviewRuntimeTests(unittest.TestCase):
             self.assertEqual(state["stage"], "cleanup")
             self.assertIn("cleanup", state)
             self.assertEqual(state["cleanup"]["track"]["track_id"], "sample_20260323")
+
+    def test_complete_with_track_changes_requests_commit_tracking_first(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            write_track(repo)
+
+            with patch("review_runtime.has_worktree_changes", return_value=True):
+                state = advance_review_runtime(repo, "sample_20260323", "complete")
+
+            self.assertEqual(state["stage"], "commit_review_changes")
+            self.assertEqual(state["commit_tracking_confirmation"]["type"], "yesno")
+
+    def test_complete_without_track_changes_requests_plain_commit_confirmation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            write_track(repo)
+
+            with patch("review_runtime.has_worktree_changes", return_value=True):
+                state = advance_review_runtime(repo, None, "complete")
+
+            self.assertEqual(state["stage"], "commit_review_changes")
+            self.assertEqual(state["commit_confirmation"]["type"], "yesno")
 
 
 if __name__ == "__main__":
