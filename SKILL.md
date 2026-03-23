@@ -39,38 +39,40 @@ Use this skill only for explicit Conductor workflow requests.
 3. Use `scripts/setup_workspace.py --repo <repo-root>` to audit existing artifacts, detect project maturity, determine resume state, and surface recommended skills.
 4. Use `scripts/setup_flow.py --repo <repo-root>` to materialize the actual setup checkpoint sequence, draft payloads, approval payloads, styleguide-selection branches, and skills-install pause points.
 5. Use `scripts/conversation_state.py init --repo <repo-root> --command setup` when the setup flow needs persisted revise/approve loop state across multiple user turns.
-6. Detect greenfield or brownfield maturity.
-7. On brownfield, ask permission for a read-only scan before analyzing the project.
-8. Infer as much product, guideline, stack, workflow, and styleguide context as possible from the repository.
-9. Use `scripts/draft_setup_docs.py --repo <repo-root>` to generate starting drafts for shared context files when guided setup needs a first-pass document.
-10. Use `scripts/apply_setup_drafts.py --repo <repo-root> --drafts-json <file>` to write the approved shared-context drafts immediately after approval, without regenerating different content.
-11. Ask only for missing or preference-driven context, including track Git workflow policy and coverage target.
-12. Capture and approve the workflow policy that should be written into or preserved in `conductor/workflow.md`.
+6. Use `scripts/flow_runtime.py --repo <repo-root> --command setup` to resume the exact next setup checkpoint after each user decision instead of re-deriving the loop manually.
+7. Detect greenfield or brownfield maturity.
+8. On brownfield, ask permission for a read-only scan before analyzing the project.
+9. Infer as much product, guideline, stack, workflow, and styleguide context as possible from the repository.
+10. Use `scripts/draft_setup_docs.py --repo <repo-root>` to generate starting drafts for shared context files when guided setup needs a first-pass document.
+11. Use `scripts/apply_setup_drafts.py --repo <repo-root> --drafts-json <file>` to write the approved shared-context drafts immediately after approval, without regenerating different content.
+12. Ask only for missing or preference-driven context, including track Git workflow policy and coverage target.
+13. Capture and approve the workflow policy that should be written into or preserved in `conductor/workflow.md`.
    - branch policy: ask per track whether to create or use a dedicated branch
    - shared branch hygiene: unfinished tracks should not remain on `main` or another shared branch
    - commit policy: commit per phase
    - coverage target for the repository workflow
-13. Produce a structured preview of the proposed live workspace artifacts and approved workflow decisions before writing files.
-14. Require explicit user confirmation.
-15. If an official-style workspace already exists, preserve its shared context files and only fill missing artifacts.
-16. If a legacy Codex-native workspace is detected, stop and require migration before continuing.
-17. Only after confirmation, run `scripts/bootstrap_conductor.py --repo <repo-root>` to materialize or repair the agreed canonical workspace, then apply the approved shared drafts with `scripts/apply_setup_drafts.py`.
-18. Be ready to hand off into the first track flow when appropriate.
+14. Produce a structured preview of the proposed live workspace artifacts and approved workflow decisions before writing files.
+15. Require explicit user confirmation.
+16. If an official-style workspace already exists, preserve its shared context files and only fill missing artifacts.
+17. If a legacy Codex-native workspace is detected, stop and require migration before continuing.
+18. Only after confirmation, run `scripts/bootstrap_conductor.py --repo <repo-root>` to materialize or repair the agreed canonical workspace, then apply the approved shared drafts with `scripts/apply_setup_drafts.py`.
+19. Be ready to hand off into the first track flow when appropriate.
 
 ### `conductor:newTrack`
 
 1. Ensure `conductor/` exists.
 2. Read `references/track_lifecycle.md`.
 3. Use `scripts/new_track_flow.py --repo <repo-root> --title "<title>"` to materialize the actual branch/spec/plan/skills checkpoints before writing the track.
-4. Run `scripts/new_track.py --repo <repo-root> --title "<title>"` only after the spec and plan have been approved.
-5. Ask whether to create or use a dedicated branch for that track, per the shared workflow policy.
-6. Verify core context through the file-resolution protocol before creating track artifacts.
-7. Use `scripts/draft_new_track.py --repo <repo-root> --track-id <track-id> --title "<title>"` to produce first-pass `spec.md` and `plan.md` drafts before interactive refinement.
-8. Continue by refining the generated `spec.md` and `plan.md`.
-9. After spec and plan approval, use `scripts/apply_new_track_drafts.py --repo <repo-root> --title "<title>" --spec-file <file> --plan-file <file>` when the approved drafts must be written exactly as reviewed.
-10. Keep `plan.md` compatible with upstream Conductor expectations: phases as main headings, `[ ]`, `[~]`, `[x]` task markers, and room for task SHA and phase checkpoint annotations.
-11. Use `scripts/skills_catalog.py` and `scripts/install_skills.py` when the track flow recommends skill installation.
-12. Do not leave unfinished track artifacts on `main` or another shared branch; if the branch choice is wrong, stop and correct it before continuing.
+4. Use `scripts/flow_runtime.py --repo <repo-root> --command newTrack --target "<title>"` to resume the exact next new-track checkpoint after each user decision.
+5. Run `scripts/new_track.py --repo <repo-root> --title "<title>"` only after the spec and plan have been approved.
+6. Ask whether to create or use a dedicated branch for that track, per the shared workflow policy.
+7. Verify core context through the file-resolution protocol before creating track artifacts.
+8. Use `scripts/draft_new_track.py --repo <repo-root> --track-id <track-id> --title "<title>"` to produce first-pass `spec.md` and `plan.md` drafts before interactive refinement.
+9. Continue by refining the generated `spec.md` and `plan.md`.
+10. After spec and plan approval, use `scripts/apply_new_track_drafts.py --repo <repo-root> --title "<title>" --spec-file <file> --plan-file <file>` when the approved drafts must be written exactly as reviewed.
+11. Keep `plan.md` compatible with upstream Conductor expectations: phases as main headings, `[ ]`, `[~]`, `[x]` task markers, and room for task SHA and phase checkpoint annotations.
+12. Use `scripts/skills_catalog.py` and `scripts/install_skills.py` when the track flow recommends skill installation.
+13. Do not leave unfinished track artifacts on `main` or another shared branch; if the branch choice is wrong, stop and correct it before continuing.
 
 ### `conductor:status`
 
@@ -92,7 +94,7 @@ These remain agent-driven workflow commands backed by deterministic helper scrip
 - For `implement`, treat workflow verification and checkpoint behavior as authoritative for the track unless the user explicitly changes it.
 - For `implement`, use `scripts/git_notes_helper.py --repo <repo-root> --sha <commit> --task "<task>" --summary "<summary>"` when the workflow calls for task or checkpoint notes.
 - For `implement`, use `scripts/sync_project_docs.py --repo <repo-root> --track <track-id>` when the completed track requires project-document synchronization.
-- For `review`, use `scripts/review_flow.py --repo <repo-root>` first to materialize scope, diff range, and review checkpoints, then use `scripts/review_track.py --repo <repo-root>` to prepare scaffolding and update `review.md` with findings, risks, gaps, and decision.
+- For `review`, use `scripts/review_flow.py --repo <repo-root> --run-tests` first to materialize scope, diff range, executable test results, and review checkpoints, then use `scripts/review_track.py --repo <repo-root>` to prepare scaffolding and update `review.md` with findings, risks, gaps, and decision.
 - For `review`, use the `diff_strategy`, `large_review_confirmation`, `test_command`, and `decision_question` payloads from `scripts/review_flow.py` to preserve the Gemini-style review branches.
 - For `review`, use `scripts/commit_review_fixes.py --repo <repo-root>` when review fixes were applied and the workflow requires the review-fix task plus plan-update commit sequence.
 - For `revert`, use `scripts/revert_flow.py --repo <repo-root>` first to materialize candidates, target scope, and rollback checkpoints, then use `scripts/revert_track.py --repo <repo-root>` to enumerate implementation commits, associated plan-update commits, and whole-track registry-creation commits before executing the rollback.

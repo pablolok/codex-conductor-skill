@@ -47,6 +47,7 @@ Check that these files exist:
 - `scripts/bootstrap_conductor.py`
 - `scripts/setup_workspace.py`
 - `scripts/setup_flow.py`
+- `scripts/flow_runtime.py`
 - `scripts/conversation_state.py`
 - `scripts/draft_setup_docs.py`
 - `scripts/apply_setup_drafts.py`
@@ -129,6 +130,13 @@ Use this to persist multi-turn revise/approve loop state:
 python scripts/conversation_state.py init --repo <repo-root> --command setup
 ```
 
+Use this to advance or resume the exact next guided setup checkpoint:
+
+```powershell
+python scripts/flow_runtime.py --repo <repo-root> --command setup
+python scripts/flow_runtime.py --repo <repo-root> --command setup --session <session.json> --decision "Approve"
+```
+
 Use this to write the approved shared-context drafts exactly as reviewed:
 
 ```powershell
@@ -173,6 +181,13 @@ Use this to inspect the guided new-track checkpoints before materializing the tr
 python scripts/new_track_flow.py --repo <repo-root> --title "Implement user authentication"
 ```
 
+Use this to advance or resume the exact next guided new-track checkpoint:
+
+```powershell
+python scripts/flow_runtime.py --repo <repo-root> --command newTrack --target "Implement user authentication"
+python scripts/flow_runtime.py --repo <repo-root> --command newTrack --target "Implement user authentication" --session <session.json> --decision "Approve"
+```
+
 Use this to write the approved spec and plan exactly as reviewed:
 
 ```powershell
@@ -184,7 +199,7 @@ Use these to inspect guided lifecycle checkpoints before the mutating helper ste
 ```powershell
 python scripts/implement_flow.py --repo <repo-root>
 python scripts/commit_task.py --repo <repo-root> --code-message "feat: ..." --plan-message "conductor(plan): Mark task complete"
-python scripts/review_flow.py --repo <repo-root>
+python scripts/review_flow.py --repo <repo-root> --run-tests
 python scripts/commit_review_fixes.py --repo <repo-root> --message "fix(conductor): Apply review suggestions"
 python scripts/revert_flow.py --repo <repo-root> --candidates
 python scripts/execute_revert.py --repo <repo-root> --repair-state

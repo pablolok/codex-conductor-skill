@@ -18,6 +18,7 @@ Key helper scripts now include:
 
 - `scripts/setup_workspace.py`
 - `scripts/setup_flow.py`
+- `scripts/flow_runtime.py`
 - `scripts/conversation_state.py`
 - `scripts/draft_setup_docs.py`
 - `scripts/apply_setup_drafts.py`
@@ -145,6 +146,13 @@ Persisted conversation-state support:
 python scripts/conversation_state.py init --repo <repo-root> --command setup
 ```
 
+Advance or resume the exact next guided checkpoint:
+
+```powershell
+python scripts/flow_runtime.py --repo <repo-root> --command setup
+python scripts/flow_runtime.py --repo <repo-root> --command setup --session <session.json> --decision "Approve"
+```
+
 Apply approved setup drafts immediately:
 
 ```powershell
@@ -155,6 +163,13 @@ New-track checkpoint flow support:
 
 ```powershell
 python scripts/new_track_flow.py --repo <repo-root> --title "Implement user authentication"
+```
+
+Resume the guided new-track loop after each user decision:
+
+```powershell
+python scripts/flow_runtime.py --repo <repo-root> --command newTrack --target "Implement user authentication"
+python scripts/flow_runtime.py --repo <repo-root> --command newTrack --target "Implement user authentication" --session <session.json> --decision "Approve"
 ```
 
 Apply approved track drafts immediately:
@@ -168,7 +183,7 @@ Implement/review/revert checkpoint flow support:
 ```powershell
 python scripts/implement_flow.py --repo <repo-root>
 python scripts/commit_task.py --repo <repo-root> --code-message "feat: ..." --plan-message "conductor(plan): Mark task complete"
-python scripts/review_flow.py --repo <repo-root>
+python scripts/review_flow.py --repo <repo-root> --run-tests
 python scripts/commit_review_fixes.py --repo <repo-root> --message "fix(conductor): Apply review suggestions"
 python scripts/revert_flow.py --repo <repo-root> --candidates
 python scripts/execute_revert.py --repo <repo-root> --repair-state

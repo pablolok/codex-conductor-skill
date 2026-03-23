@@ -4,11 +4,12 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from review_flow import build_review_flow, classify_diff_strategy, infer_test_command  # noqa: E402
+from review_flow import build_review_flow, classify_diff_strategy, execute_test_command, infer_test_command  # noqa: E402
 
 
 class ReviewFlowTests(unittest.TestCase):
@@ -51,6 +52,44 @@ class ReviewFlowTests(unittest.TestCase):
             self.assertIn("skills", flow)
             self.assertEqual([item["name"] for item in flow["skills"]["installed_recommendations"]], ["firebase-basics"])
             self.assertTrue(flow["skills"]["missing_recommendations"])
+
+    def test_execute_test_command_returns_skipped_for_manual(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            result = execute_test_command(repo, "manual")
+            self.assertTrue(result["skipped"])
+            self.assertEqual(result["status"], "manual")
+
+    def test_review_flow_can_execute_inferred_tests(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            conductor_dir = repo / "conductor"
+            track_dir = conductor_dir / "tracks" / "sample_20260323"
+            track_dir.mkdir(parents=True)
+            (repo / "pyproject.toml").write_text("[project]\nname='sample'\n", encoding="utf-8")
+            (conductor_dir / "tracks.md").write_text(
+                "---\n\n- [~] **Track: Sample**\n  *Link: [./tracks/sample_20260323/](./tracks/sample_20260323/)*\n",
+                encoding="utf-8",
+            )
+            (conductor_dir / "workflow.md").write_text("# Workflow\n", encoding="utf-8")
+            (track_dir / "index.md").write_text("- [Specification](./spec.md)\n- [Implementation Plan](./plan.md)\n", encoding="utf-8")
+            (track_dir / "metadata.json").write_text(
+                '{"track_id":"sample_20260323","type":"feature","status":"in_progress","created_at":"2026-03-23T00:00:00Z","updated_at":"2026-03-23T00:00:00Z","description":"Sample","title":"Sample"}',
+                encoding="utf-8",
+            )
+            (track_dir / "spec.md").write_text("Spec\n", encoding="utf-8")
+            (track_dir / "plan.md").write_text("# Phase 1\n- [~] Task: Implement flow\n", encoding="utf-8")
+            (track_dir / "review.md").write_text("# Review\n", encoding="utf-8")
+            (track_dir / "verify.md").write_text("# Verify\n", encoding="utf-8")
+
+            with patch("review_flow.subprocess.run") as run:
+                run.return_value.returncode = 0
+                run.return_value.stdout = "passed"
+                run.return_value.stderr = ""
+                flow = build_review_flow(repo, "sample_20260323", run_tests=True)
+
+            self.assertEqual(flow["test_execution"]["status"], "passed")
+            self.assertEqual(flow["test_execution"]["command"], "pytest")
 
 
 if __name__ == "__main__":

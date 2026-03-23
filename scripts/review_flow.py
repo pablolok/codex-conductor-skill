@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 from pathlib import Path
 
 from conductor_fs import load_metadata, require_canonical_workspace
@@ -32,12 +33,35 @@ def infer_test_command(repo: Path) -> str:
     return "manual"
 
 
-def build_review_flow(repo: Path, track_ref: str | None) -> dict[str, object]:
+def execute_test_command(repo: Path, command: str) -> dict[str, object]:
+    if command == "manual":
+        return {
+            "command": command,
+            "status": "manual",
+            "returncode": None,
+            "stdout": "",
+            "stderr": "",
+            "skipped": True,
+        }
+    result = subprocess.run(command.split(), cwd=repo, text=True, capture_output=True, check=False)
+    return {
+        "command": command,
+        "status": "passed" if result.returncode == 0 else "failed",
+        "returncode": result.returncode,
+        "stdout": result.stdout.strip(),
+        "stderr": result.stderr.strip(),
+        "skipped": False,
+    }
+
+
+def build_review_flow(repo: Path, track_ref: str | None, run_tests: bool = False) -> dict[str, object]:
     conductor_dir = repo / "conductor"
     track_dir = detect_scope(conductor_dir, track_ref)
     report = build_review_report(track_dir, repo)
     metadata = load_metadata(track_dir)
     strategy = classify_diff_strategy(report["shortstat"])
+    test_command = infer_test_command(repo)
+    test_execution = execute_test_command(repo, test_command) if run_tests else None
     context = "\n".join(
         [
             (repo / "AGENTS.md").read_text(encoding="utf-8") if (repo / "AGENTS.md").exists() else "",
@@ -56,7 +80,8 @@ def build_review_flow(repo: Path, track_ref: str | None) -> dict[str, object]:
         },
         "scope": report,
         "diff_strategy": strategy,
-        "test_command": infer_test_command(repo),
+        "test_command": test_command,
+        "test_execution": test_execution,
         "skills": {
             "installed_recommendations": skill_partition["installed"],
             "missing_recommendations": skill_partition["missing"],
@@ -98,11 +123,12 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True)
     parser.add_argument("--track")
+    parser.add_argument("--run-tests", action="store_true")
     args = parser.parse_args()
 
     repo = Path(args.repo).resolve()
     require_canonical_workspace(repo / "conductor")
-    print(json.dumps(build_review_flow(repo, args.track), indent=2))
+    print(json.dumps(build_review_flow(repo, args.track, run_tests=args.run_tests), indent=2))
 
 
 if __name__ == "__main__":
