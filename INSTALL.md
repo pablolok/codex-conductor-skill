@@ -62,6 +62,7 @@ Check that these files exist:
 - `scripts/commit_task.py`
 - `scripts/git_notes_helper.py`
 - `scripts/review_flow.py`
+- `scripts/review_runtime.py`
 - `scripts/review_track.py`
 - `scripts/commit_review_fixes.py`
 - `scripts/revert_flow.py`
@@ -204,6 +205,9 @@ python scripts/implement_runtime.py --repo <repo-root> --track <track-id> --acti
 python scripts/implement_runtime.py --repo <repo-root> --track <track-id> --action complete_task --sha <short-sha>
 python scripts/commit_task.py --repo <repo-root> --code-message "feat: ..." --plan-message "conductor(plan): Mark task complete"
 python scripts/review_flow.py --repo <repo-root> --run-tests
+python scripts/review_runtime.py --repo <repo-root> --track <track-id> --action start
+python scripts/review_runtime.py --repo <repo-root> --track <track-id> --action apply_fixes
+python scripts/review_runtime.py --repo <repo-root> --track <track-id> --action complete
 python scripts/commit_review_fixes.py --repo <repo-root> --message "fix(conductor): Apply review suggestions"
 python scripts/revert_flow.py --repo <repo-root> --candidates
 python scripts/revert_runtime.py --repo <repo-root> --action start

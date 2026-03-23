@@ -6,7 +6,8 @@
 - Consider whether the recorded commit history matches the workflow recorded in `conductor/workflow.md`.
 - Consider whether the verification evidence is consistent with the approved coverage target.
 - Use deterministic helpers to derive scope, diff range, and revert candidates before the agent takes mutating steps.
-- Use `scripts/review_flow.py` to materialize the review checkpoint sequence before mutating `review.md`.
+- Use `scripts/review_runtime.py` to drive the review checkpoint sequence through scope confirmation, large-review branching, test execution, decision handling, and cleanup handoff.
+- Use `scripts/review_flow.py` when the underlying review payload needs to be inspected directly before mutating `review.md`.
 - Record findings, risks, gaps, and decision in `review.md`.
 - If the review changes the logical track state, run `scripts/repair_track_state.py` before cleanup.
 - If review fixes are applied, use `scripts/commit_review_fixes.py` to enforce the review-fix code commit and plan-update commit sequence.
