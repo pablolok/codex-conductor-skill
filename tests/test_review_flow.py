@@ -53,6 +53,37 @@ class ReviewFlowTests(unittest.TestCase):
             self.assertEqual([item["name"] for item in flow["skills"]["installed_recommendations"]], ["firebase-basics"])
             self.assertTrue(flow["skills"]["missing_recommendations"])
 
+    def test_review_flow_surfaces_code_styleguides_as_law(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            conductor_dir = repo / "conductor"
+            track_dir = conductor_dir / "tracks" / "sample_20260323"
+            styleguide_dir = conductor_dir / "code_styleguides"
+            track_dir.mkdir(parents=True)
+            styleguide_dir.mkdir(parents=True)
+            (repo / "pyproject.toml").write_text("[project]\nname='sample'\n", encoding="utf-8")
+            (conductor_dir / "tracks.md").write_text(
+                "---\n\n- [~] **Track: Sample**\n  *Link: [./tracks/sample_20260323/](./tracks/sample_20260323/)*\n",
+                encoding="utf-8",
+            )
+            (conductor_dir / "workflow.md").write_text("# Workflow\n", encoding="utf-8")
+            (conductor_dir / "product-guidelines.md").write_text("# Product Guidelines\n\nBe strict.\n", encoding="utf-8")
+            (styleguide_dir / "python.md").write_text("# Python Guide\n\nNo wildcard imports.\n", encoding="utf-8")
+            (track_dir / "index.md").write_text("- [Specification](./spec.md)\n- [Implementation Plan](./plan.md)\n", encoding="utf-8")
+            (track_dir / "metadata.json").write_text(
+                '{"track_id":"sample_20260323","type":"feature","status":"in_progress","created_at":"2026-03-23T00:00:00Z","updated_at":"2026-03-23T00:00:00Z","description":"Sample","title":"Sample"}',
+                encoding="utf-8",
+            )
+            (track_dir / "spec.md").write_text("Spec\n", encoding="utf-8")
+            (track_dir / "plan.md").write_text("# Phase 1\n- [~] Task: Implement flow\n", encoding="utf-8")
+            (track_dir / "review.md").write_text("# Review\n", encoding="utf-8")
+            (track_dir / "verify.md").write_text("# Verify\n", encoding="utf-8")
+
+            flow = build_review_flow(repo, "sample_20260323")
+
+            self.assertEqual(flow["styleguides"]["mode"], "law")
+            self.assertEqual(flow["styleguides"]["files"], ["python.md"])
+
     def test_execute_test_command_returns_skipped_for_manual(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp)

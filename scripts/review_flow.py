@@ -10,6 +10,18 @@ from review_track import build_review_report, detect_scope
 from skills_catalog import installed_skill_names, partition_recommended_skills, recommend_skills
 
 
+def load_styleguide_context(conductor_dir: Path) -> dict[str, object]:
+    styleguide_dir = conductor_dir / "code_styleguides"
+    if not styleguide_dir.exists():
+        return {"mode": "none", "files": [], "content": []}
+    files = sorted(path for path in styleguide_dir.glob("*.md") if path.is_file())
+    return {
+        "mode": "law" if files else "none",
+        "files": [path.name for path in files],
+        "content": [path.read_text(encoding="utf-8") for path in files],
+    }
+
+
 def classify_diff_strategy(shortstat: str) -> dict[str, object]:
     numbers = [int(chunk.split()[0]) for chunk in shortstat.split(",") if chunk.strip() and chunk.strip()[0].isdigit()]
     total_lines = sum(numbers[1:3]) if len(numbers) >= 3 else sum(numbers[1:]) if len(numbers) > 1 else 0
@@ -62,12 +74,15 @@ def build_review_flow(repo: Path, track_ref: str | None, run_tests: bool = False
     strategy = classify_diff_strategy(report["shortstat"])
     test_command = infer_test_command(repo)
     test_execution = execute_test_command(repo, test_command) if run_tests else None
+    styleguides = load_styleguide_context(conductor_dir)
     context = "\n".join(
         [
             (repo / "AGENTS.md").read_text(encoding="utf-8") if (repo / "AGENTS.md").exists() else "",
+            (conductor_dir / "product-guidelines.md").read_text(encoding="utf-8") if (conductor_dir / "product-guidelines.md").exists() else "",
             (track_dir.parents[1] / "tech-stack.md").read_text(encoding="utf-8") if (track_dir.parents[1] / "tech-stack.md").exists() else "",
             (track_dir / "spec.md").read_text(encoding="utf-8") if (track_dir / "spec.md").exists() else "",
             (track_dir / "plan.md").read_text(encoding="utf-8") if (track_dir / "plan.md").exists() else "",
+            *styleguides["content"],
         ]
     )
     recommendations = recommend_skills(Path(__file__).resolve().parents[1] / "skills" / "catalog.md", context)
@@ -80,6 +95,10 @@ def build_review_flow(repo: Path, track_ref: str | None, run_tests: bool = False
         },
         "scope": report,
         "diff_strategy": strategy,
+        "styleguides": {
+            "mode": styleguides["mode"],
+            "files": styleguides["files"],
+        },
         "test_command": test_command,
         "test_execution": test_execution,
         "skills": {
