@@ -1,10 +1,10 @@
 # Conductor in This Repository
 
-This repository uses a prompt-first Google Conductor-style workflow for structured work.
+This repository uses a prompt-first Gemini-compatible Conductor workflow for structured work.
 
 `AGENTS.md` defines repository-wide engineering rules, validation requirements, and coding constraints.
 
-`conductor/` is the generated workspace used when work is explicitly handled through Conductor.
+`conductor/` is the canonical workspace used when work is explicitly handled through Conductor.
 
 ## Core Files
 
@@ -21,6 +21,7 @@ This repository uses a prompt-first Google Conductor-style workflow for structur
 - `AGENTS.md` defines how code must be written and verified.
 - `conductor/` defines how structured work is discovered, planned, tracked, reviewed, and archived.
 - When a request is handled through Conductor, both must be followed.
+- Existing official Conductor files should be preserved whenever possible.
 
 ## Supported Conductor Commands
 
@@ -50,11 +51,11 @@ Only live workflow artifacts are written into the repository. Template libraries
 
 The setup also defines the shared Git workflow for tracks:
 
-- require a dedicated branch for every track before any track files are created
+- ask per track whether to create or use a dedicated branch
+- use the workflow recorded in `workflow.md`
 - keep unfinished tracks off `main` and other shared branches
-- use phase checkpoints as the standard commit boundary
 
 The setup also defines the shared quality workflow for tracks:
 
 - ask for and record the repository coverage target
-- in this repository, the approved target is 100%
+- preserve an existing official workflow when one is already present

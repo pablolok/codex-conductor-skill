@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import argparse
 import json
-import shutil
 from pathlib import Path
 
 from conductor_fs import (
+    CANONICAL_SHARED_FILES,
     detect_styleguide_names,
+    detect_workspace_kind,
+    ensure_tracks_registry,
     infer_product_name,
     infer_solution_file,
     infer_source_roots,
@@ -53,6 +55,13 @@ def render_shared_context(repo: Path, template_base: Path) -> dict[str, str]:
 
 def ensure_shared_context(repo: Path, template_base: Path) -> None:
     conductor_dir = repo / "conductor"
+    kind = detect_workspace_kind(conductor_dir)
+    if kind == "legacy":
+        raise SystemExit(
+            "Legacy Codex-native conductor workspace detected. "
+            "Run scripts/migrate_workspace.py --repo <repo-root> before bootstrapping."
+        )
+
     conductor_dir.mkdir(parents=True, exist_ok=True)
     (conductor_dir / "archive").mkdir(parents=True, exist_ok=True)
     (conductor_dir / "code_styleguides").mkdir(parents=True, exist_ok=True)
@@ -60,15 +69,12 @@ def ensure_shared_context(repo: Path, template_base: Path) -> None:
 
     reset_generated_structure(conductor_dir)
 
-    # Rebuild selected styleguides from the skill library on each setup refresh.
-    styleguide_dir = conductor_dir / "code_styleguides"
-    if styleguide_dir.exists():
-        shutil.rmtree(styleguide_dir)
-    styleguide_dir.mkdir(parents=True, exist_ok=True)
-
     for relative_target, content in render_shared_context(repo, template_base).items():
-        write_text(conductor_dir / relative_target, content)
+        target = conductor_dir / relative_target
+        if not target.exists():
+            write_text(target, content)
 
+    ensure_tracks_registry(conductor_dir, template_base)
     refresh_portfolio_indexes(conductor_dir, template_base)
 
 
@@ -81,25 +87,29 @@ def main() -> None:
     repo = Path(args.repo).resolve()
     template_base = Path(__file__).resolve().parents[1]
     conductor_dir = repo / "conductor"
+    workspace_kind = detect_workspace_kind(conductor_dir)
 
     if args.preview:
         rendered = render_shared_context(repo, template_base)
         preview = {
             "repo": str(repo),
+            "workspace_kind": workspace_kind,
             "conductor_exists": conductor_dir.exists(),
-            "files": sorted([*rendered.keys(), *render_portfolio_indexes(conductor_dir, template_base).keys()]),
+            "shared_files": sorted([*rendered.keys(), *render_portfolio_indexes(conductor_dir, template_base).keys()]),
+            "canonical_files": list(CANONICAL_SHARED_FILES),
             "styleguides": detect_styleguide_names(repo),
             "context": {
                 "product_name": infer_product_name(repo),
                 "solution_file": infer_solution_file(repo),
                 "source_roots": infer_source_roots(repo),
+                "tech_stack": infer_tech_stack(repo),
             },
         }
         print(json.dumps(preview, indent=2))
         return
 
     ensure_shared_context(repo, template_base)
-    print(f"Bootstrapped conductor workspace in {repo / 'conductor'}")
+    print(f"Bootstrapped canonical conductor workspace in {repo / 'conductor'}")
 
 
 if __name__ == "__main__":

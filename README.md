@@ -1,6 +1,6 @@
 # Codex Conductor Skill
 
-This folder is a standalone Codex skill package for an official-style Google Conductor workflow.
+This folder is a standalone Codex skill package for a Gemini-first Google Conductor workflow.
 
 It is structured so it can be moved into its own repository without depending on this finance dashboard repository.
 
@@ -53,14 +53,16 @@ It should:
 
 The shared Git workflow currently encoded by the skill is:
 
-- require a dedicated branch for every track before any track files are created
+- ask per track whether to create or use a dedicated branch
 - keep unfinished tracks off `main` and other shared branches
-- use phase checkpoints as the standard commit boundary
+- use the workflow recorded in `workflow.md`
 
 The shared quality workflow currently encoded by the skill is:
 
 - ask for the repository coverage target during setup
 - in this repository, the approved target is 100%
+
+For existing repositories, the skill treats an upstream-style `conductor/` workspace as canonical and should take over from the workspace already on disk instead of replacing it with a local-only format.
 
 ## Plan Format
 
@@ -77,6 +79,16 @@ The bootstrap script supports the final materialization step:
 ```powershell
 python scripts/bootstrap_conductor.py --repo <repo-root>
 ```
+
+## Migration
+
+Older Codex-native conductor workspaces are no longer treated as fully supported runtime state. Migrate them first:
+
+```powershell
+python scripts/migrate_workspace.py --repo <repo-root>
+```
+
+The migration rewrites the local custom workspace into the canonical Gemini-compatible format while preserving `spec.md`, `plan.md`, `review.md`, and `verify.md`.
 
 Preview support:
 
@@ -99,3 +111,4 @@ If you want to publish this as a separate repository:
 - The target repository should receive only live `conductor/` artifacts, not repo-local template scaffolds.
 - The target repository still provides its own `AGENTS.md` and project-specific context.
 - The bootstrap script is not the full meaning of `conductor:setup`; it only materializes the agreed context.
+- Existing official Conductor files are preserved whenever possible.

@@ -8,7 +8,9 @@ Follow this order:
 2. Detect whether the repository is greenfield or brownfield.
 3. On brownfield, ask permission before any read-only project scan.
 4. Infer stable context from `README.md`, `AGENTS.md`, manifests, source layout, and existing Conductor files.
-5. Ask only the missing or preference-driven questions needed to complete:
+5. If an upstream-style `conductor/` workspace already exists, preserve it and resume from its actual state.
+6. If a legacy Codex-native workspace is detected, stop and require migration before full lifecycle operations.
+7. Ask only the missing or preference-driven questions needed to complete:
    - product context
    - product guidelines
    - tech stack
@@ -16,15 +18,15 @@ Follow this order:
    - track branch naming or branch workflow details if the repository needs them
    - coverage target
    - styleguide selection
-6. In the workflow section, explicitly approve:
-   - branch policy: every track must use a dedicated branch, and that branch must be created or selected before any track files are generated
-   - shared branch hygiene: `main` or other shared branches must not contain unfinished tracks that belong to another branch
-   - commit policy: commit per phase
+8. In the workflow section, explicitly confirm whether existing workflow rules should be preserved or refreshed.
+   - branch policy: ask per track whether to create or use a dedicated branch
+   - shared branch hygiene: unfinished tracks should not remain on shared branches
+   - commit policy: commit per phase unless preserved workflow says otherwise
    - coverage target: ask explicitly and record the approved threshold
-7. Produce a proposed shared context summary.
-8. Preview the live workspace artifacts that would be created or refreshed, including the approved workflow policy.
-9. Ask for explicit confirmation.
-10. Only after confirmation, materialize `conductor/`.
-11. When the workspace is ready, hand off into the initial track flow if the session requires it.
+9. Produce a proposed shared context summary.
+10. Preview the live workspace artifacts that would be created or refreshed, including the approved workflow policy.
+11. Ask for explicit confirmation.
+12. Only after confirmation, materialize or repair the canonical `conductor/` workspace.
+13. When the workspace is ready, hand off into the initial track flow if the session requires it.
 
 Scripts support setup, but they do not define setup.

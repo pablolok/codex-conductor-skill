@@ -2,49 +2,30 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
-from datetime import datetime, timezone
 from pathlib import Path
 
 from conductor_fs import (
+    append_track_to_registry,
+    canonical_track_id,
+    existing_track_ids,
+    infer_track_type,
     load_template,
-    read_text,
+    now_utc,
     refresh_portfolio_indexes,
     refresh_track_index,
+    require_canonical_workspace,
     write_text,
 )
 
 
-def slugify(text: str) -> str:
-    slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
-    return slug or "track"
-
-
-def next_track_id(tracks_dir: Path, archive_dir: Path) -> str:
-    max_number = 0
-    for base in (tracks_dir, archive_dir):
-        if not base.exists():
-            continue
-        for metadata in base.glob("*/metadata.json"):
-            try:
-                data = json.loads(read_text(metadata))
-            except json.JSONDecodeError:
-                continue
-            match = re.match(r"track-(\d+)$", str(data.get("id", "")))
-            if match:
-                max_number = max(max_number, int(match.group(1)))
-    return f"track-{max_number + 1:03d}"
-
-
 def render_track_files(template_base: Path, metadata: dict, title: str) -> dict[str, str]:
     replacements = {
-        "{{TRACK_ID}}": metadata["id"],
+        "{{TRACK_ID}}": metadata["track_id"],
         "{{TRACK_TITLE}}": metadata["title"],
         "{{TRACK_STATUS}}": metadata["status"],
-        "{{TRACK_PHASE}}": metadata["phase"],
-        "{{TRACK_ACTIVE_TASK}}": metadata["activeTask"],
         "{{TRACK_PATH}}": metadata["path"],
         "{{TRACK_REQUEST}}": title,
+        "{{TRACK_TYPE}}": metadata["type"],
     }
     templates = {
         "spec.md": "track_spec.md.tmpl",
@@ -71,31 +52,31 @@ def main() -> None:
     repo = Path(args.repo).resolve()
     conductor_dir = repo / "conductor"
     tracks_dir = conductor_dir / "tracks"
-    archive_dir = conductor_dir / "archive"
     template_base = Path(__file__).resolve().parents[1]
 
     if not conductor_dir.exists():
         raise SystemExit("conductor/ does not exist. Run conductor:setup first.")
 
-    track_id = next_track_id(tracks_dir, archive_dir)
-    slug = slugify(args.title)
-    directory_name = f"{track_id}-{slug}"
-    target_dir = tracks_dir / directory_name
+    require_canonical_workspace(conductor_dir)
+
+    for required in ("product.md", "tech-stack.md", "workflow.md", "tracks.md"):
+        if not (conductor_dir / required).exists():
+            raise SystemExit(f"Missing required conductor file: {required}")
+
+    now = now_utc()
+    track_id = canonical_track_id(args.title, existing_track_ids(conductor_dir), created_at=now)
+    target_dir = tracks_dir / track_id
     target_dir.mkdir(parents=True, exist_ok=False)
 
-    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     metadata = {
-        "id": track_id,
-        "slug": slug,
+        "track_id": track_id,
+        "type": infer_track_type(args.title),
+        "status": "new",
+        "created_at": now,
+        "updated_at": now,
+        "description": args.title,
         "title": args.title,
-        "status": "spec",
-        "phase": "spec",
-        "createdAt": now,
-        "updatedAt": now,
-        "archivedAt": None,
-        "path": f"conductor/tracks/{directory_name}",
-        "relatedTrackIds": [],
-        "activeTask": "Draft and confirm the track spec",
+        "path": f"conductor/tracks/{track_id}",
     }
 
     write_text(target_dir / "metadata.json", json.dumps(metadata, indent=2))
@@ -103,6 +84,7 @@ def main() -> None:
         write_text(target_dir / relative_target, content)
 
     refresh_track_index(target_dir, template_base)
+    append_track_to_registry(conductor_dir, template_base, track_id, args.title, status="new")
     refresh_portfolio_indexes(conductor_dir, template_base)
     print(str(target_dir))
 

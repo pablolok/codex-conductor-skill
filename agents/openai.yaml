@@ -1,5 +1,5 @@
 version: 1
 interface:
   display_name: Conductor
-  short_description: Bootstrap and operate a Google Conductor-style repo workflow
-  default_prompt: Use the repo-local conductor workflow and bundled scripts to bootstrap, refresh, and operate track-based structured work, including the required dedicated branch per track, the rule that unfinished tracks must not remain on main or other shared branches, the phase-based commit policy, and the repository coverage target.
+  short_description: Take over and operate a Gemini-first Conductor workspace
+  default_prompt: Use the repo-local conductor workflow and bundled scripts to inspect, migrate when required, and operate a Gemini-compatible track-based Conductor workspace without reshaping existing official artifacts, while preserving branch and workflow checkpoints required by the repository policy.

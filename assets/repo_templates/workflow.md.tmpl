@@ -36,16 +36,15 @@ This workflow defines how structured work is organized when a request explicitly
 
 The shared Git workflow for Conductor tracks is:
 
-- Branch policy: every track must use a dedicated branch, and that branch must be created or selected before any track files are generated
-- Shared branch hygiene: `main` and other shared branches must not contain unfinished tracks that belong to another branch
-- Commit policy: use phase checkpoints as the standard commit boundary
+- Branch policy: ask at the start of each track whether to create or use a dedicated branch
+- Shared branch hygiene: `main` and other shared branches should not contain unfinished tracks from another branch
+- Commit policy: follow the rules agreed during setup and preserved in this file
 
 Implications:
 
-- `conductor:newTrack` should create or switch to the track branch before generating track artifacts
-- `conductor:newTrack` should stop if the current branch would leave unfinished track artifacts on `main` or another shared branch
-- `conductor:implement` should treat the end of a phase as the normal moment to stage, verify, and commit work
-- `conductor:review` and `conductor:revert` should interpret commit history with this phase-based policy in mind
+- `conductor:newTrack` should ask for the branch decision before active implementation begins
+- `conductor:implement` should treat this file as the source of truth for task lifecycle, verification, and commit behavior
+- `conductor:review` and `conductor:revert` should interpret commit history with this workflow in mind
 
 ## Quality Workflow
 
@@ -67,45 +66,29 @@ Conductor work is organized as:
 - project context
 - tracks
 - phases
-- numbered steps inside each phase of `plan.md`
+- tasks inside each phase of `plan.md`
 
 Each track lives in `conductor/tracks/<track-id>/`.
 The top-level navigation index is `conductor/index.md`.
 Each track has its own navigation file at `conductor/tracks/<track-id>/index.md`.
+The active track registry is `conductor/tracks.md`.
 
 ## Plan Format
 
-Track plans should use a hybrid Conductor format:
+Track plans should stay compatible with upstream Conductor expectations:
 
 - phases remain the main workflow checkpoints
-- each phase contains numbered steps such as `Step 1`, `Step 2`, `Step 3`
-- each step is tracked with `[ ]`, `[~]`, or `[x]`
-
-This keeps the plan close to the official Conductor procedural style while preserving phase-level review, verification, and commit checkpoints.
-
-## States and Phases
-
-- `spec`
-- `confirming`
-- `planned`
-- `implementing`
-- `reviewing`
-- `verifying`
-- `done`
-- `archived`
-- `blocked`
-
-Expected progression:
-
-`spec -> confirming -> planned -> implementing -> reviewing -> verifying -> done -> archived`
+- tasks and sub-tasks use `[ ]`, `[~]`, or `[x]` markers
+- task lines may append short commit SHAs when completed
+- phase headings may append checkpoint annotations such as `[checkpoint: abc1234]`
 
 ## Source of Truth
 
 - `conductor/index.md` is the primary workspace index.
-- `conductor/tracks.md` is a compact compatibility summary.
-- `metadata.json` is the per-track structured state.
-- `spec.md`, `plan.md`, `review.md`, and `verify.md` are the operational source of truth.
+- `conductor/tracks.md` is the canonical active track registry.
+- `metadata.json` is supporting structured state for each track.
+- `spec.md`, `plan.md`, `review.md`, and `verify.md` are the operational source of truth for the track.
 
-If they diverge, operational track files drive the reconciliation.
+If they diverge, preserve the existing official artifacts and reconcile carefully instead of reshaping the workspace.
 
 No file write should happen before setup confirmation.

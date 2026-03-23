@@ -44,6 +44,7 @@ Check that these files exist:
 - `references/review_revert_archive.md`
 - `references/artifact_sync.md`
 - `scripts/bootstrap_conductor.py`
+- `scripts/migrate_workspace.py`
 - `scripts/new_track.py`
 - `scripts/status_tracks.py`
 - `scripts/archive_tracks.py`
@@ -61,25 +62,19 @@ It should:
 5. define the shared Git workflow for tracks
 6. ask for and record the repository coverage target
 7. show a preview of the proposed live workspace artifacts and workflow decisions
-6. require explicit confirmation
-7. only then materialize the repo-local `conductor/` workspace
+8. require explicit confirmation
+9. only then materialize the repo-local `conductor/` workspace
 
 The shared Git workflow encoded by the skill is:
 
-- branch policy: every track must use a dedicated branch before any track files are created
-- shared branch hygiene: `main` and other shared branches must not contain unfinished tracks from another branch
+- branch policy: ask per track whether to create or use a dedicated branch
+- shared branch hygiene: unfinished tracks should not remain on `main` or another shared branch
 - commit policy: commit per phase
-
 Track plans are expected to use a hybrid format:
 
 - phases remain the main execution checkpoints
 - each phase contains numbered steps
 - each step uses `[ ]`, `[~]`, `[x]`
-
-The shared quality workflow encoded by the skill is:
-
-- coverage target is explicitly requested during setup
-- for this repository, the target is 100%
 
 ## Preview a Repository Setup
 
@@ -99,6 +94,18 @@ python scripts/bootstrap_conductor.py --repo <repo-root>
 
 This recreates or refreshes the repo-local `conductor/` directory after the conversational setup has been confirmed.
 
+For existing upstream-style Conductor repositories, this preserves shared context files and only fills missing canonical artifacts.
+
+## Migrate a Legacy Codex-Native Workspace
+
+If a repository was created with the older Codex-native workspace shape, migrate it before using the full lifecycle commands:
+
+```powershell
+python scripts/migrate_workspace.py --repo <repo-root>
+```
+
+This converts the workspace into the canonical Gemini-compatible format.
+
 ## Supported Commands
 
 The skill is intended for these explicit workflow triggers:
@@ -116,3 +123,4 @@ The skill is intended for these explicit workflow triggers:
 - The skill can materialize a repo-local `conductor/` workspace from bundled libraries.
 - The target repository still owns its own `AGENTS.md` and project-specific rules.
 - The bootstrap script is only the final file generation step.
+- Legacy Codex-native workspaces must be migrated before takeover support is guaranteed.
