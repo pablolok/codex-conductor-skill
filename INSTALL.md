@@ -49,10 +49,12 @@ Check that these files exist:
 - `scripts/setup_flow.py`
 - `scripts/conversation_state.py`
 - `scripts/draft_setup_docs.py`
+- `scripts/apply_setup_drafts.py`
 - `scripts/migrate_workspace.py`
 - `scripts/new_track.py`
 - `scripts/new_track_flow.py`
 - `scripts/draft_new_track.py`
+- `scripts/apply_new_track_drafts.py`
 - `scripts/implement_flow.py`
 - `scripts/implement_track.py`
 - `scripts/commit_task.py`
@@ -127,6 +129,12 @@ Use this to persist multi-turn revise/approve loop state:
 python scripts/conversation_state.py init --repo <repo-root> --command setup
 ```
 
+Use this to write the approved shared-context drafts exactly as reviewed:
+
+```powershell
+python scripts/apply_setup_drafts.py --repo <repo-root> --drafts-json <approved-drafts.json>
+```
+
 ## Materialize a Repository Context
 
 Run the materialization step against a target repository:
@@ -163,6 +171,12 @@ Use this to inspect the guided new-track checkpoints before materializing the tr
 
 ```powershell
 python scripts/new_track_flow.py --repo <repo-root> --title "Implement user authentication"
+```
+
+Use this to write the approved spec and plan exactly as reviewed:
+
+```powershell
+python scripts/apply_new_track_drafts.py --repo <repo-root> --title "Implement user authentication" --spec-file <approved-spec.md> --plan-file <approved-plan.md>
 ```
 
 Use these to inspect guided lifecycle checkpoints before the mutating helper steps:

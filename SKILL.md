@@ -43,18 +43,19 @@ Use this skill only for explicit Conductor workflow requests.
 7. On brownfield, ask permission for a read-only scan before analyzing the project.
 8. Infer as much product, guideline, stack, workflow, and styleguide context as possible from the repository.
 9. Use `scripts/draft_setup_docs.py --repo <repo-root>` to generate starting drafts for shared context files when guided setup needs a first-pass document.
-10. Ask only for missing or preference-driven context, including track Git workflow policy and coverage target.
-11. Capture and approve the workflow policy that should be written into or preserved in `conductor/workflow.md`.
+10. Use `scripts/apply_setup_drafts.py --repo <repo-root> --drafts-json <file>` to write the approved shared-context drafts immediately after approval, without regenerating different content.
+11. Ask only for missing or preference-driven context, including track Git workflow policy and coverage target.
+12. Capture and approve the workflow policy that should be written into or preserved in `conductor/workflow.md`.
    - branch policy: ask per track whether to create or use a dedicated branch
    - shared branch hygiene: unfinished tracks should not remain on `main` or another shared branch
    - commit policy: commit per phase
    - coverage target for the repository workflow
-12. Produce a structured preview of the proposed live workspace artifacts and approved workflow decisions before writing files.
-13. Require explicit user confirmation.
-14. If an official-style workspace already exists, preserve its shared context files and only fill missing artifacts.
-15. If a legacy Codex-native workspace is detected, stop and require migration before continuing.
-16. Only after confirmation, run `scripts/bootstrap_conductor.py --repo <repo-root>` to materialize or repair the agreed canonical workspace.
-17. Be ready to hand off into the first track flow when appropriate.
+13. Produce a structured preview of the proposed live workspace artifacts and approved workflow decisions before writing files.
+14. Require explicit user confirmation.
+15. If an official-style workspace already exists, preserve its shared context files and only fill missing artifacts.
+16. If a legacy Codex-native workspace is detected, stop and require migration before continuing.
+17. Only after confirmation, run `scripts/bootstrap_conductor.py --repo <repo-root>` to materialize or repair the agreed canonical workspace, then apply the approved shared drafts with `scripts/apply_setup_drafts.py`.
+18. Be ready to hand off into the first track flow when appropriate.
 
 ### `conductor:newTrack`
 
@@ -66,9 +67,10 @@ Use this skill only for explicit Conductor workflow requests.
 6. Verify core context through the file-resolution protocol before creating track artifacts.
 7. Use `scripts/draft_new_track.py --repo <repo-root> --track-id <track-id> --title "<title>"` to produce first-pass `spec.md` and `plan.md` drafts before interactive refinement.
 8. Continue by refining the generated `spec.md` and `plan.md`.
-9. Keep `plan.md` compatible with upstream Conductor expectations: phases as main headings, `[ ]`, `[~]`, `[x]` task markers, and room for task SHA and phase checkpoint annotations.
-10. Use `scripts/skills_catalog.py` and `scripts/install_skills.py` when the track flow recommends skill installation.
-11. Do not leave unfinished track artifacts on `main` or another shared branch; if the branch choice is wrong, stop and correct it before continuing.
+9. After spec and plan approval, use `scripts/apply_new_track_drafts.py --repo <repo-root> --title "<title>" --spec-file <file> --plan-file <file>` when the approved drafts must be written exactly as reviewed.
+10. Keep `plan.md` compatible with upstream Conductor expectations: phases as main headings, `[ ]`, `[~]`, `[x]` task markers, and room for task SHA and phase checkpoint annotations.
+11. Use `scripts/skills_catalog.py` and `scripts/install_skills.py` when the track flow recommends skill installation.
+12. Do not leave unfinished track artifacts on `main` or another shared branch; if the branch choice is wrong, stop and correct it before continuing.
 
 ### `conductor:status`
 

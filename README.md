@@ -20,9 +20,11 @@ Key helper scripts now include:
 - `scripts/setup_flow.py`
 - `scripts/conversation_state.py`
 - `scripts/draft_setup_docs.py`
+- `scripts/apply_setup_drafts.py`
 - `scripts/new_track.py`
 - `scripts/new_track_flow.py`
 - `scripts/draft_new_track.py`
+- `scripts/apply_new_track_drafts.py`
 - `scripts/implement_flow.py`
 - `scripts/implement_track.py`
 - `scripts/commit_task.py`
@@ -143,10 +145,22 @@ Persisted conversation-state support:
 python scripts/conversation_state.py init --repo <repo-root> --command setup
 ```
 
+Apply approved setup drafts immediately:
+
+```powershell
+python scripts/apply_setup_drafts.py --repo <repo-root> --drafts-json <approved-drafts.json>
+```
+
 New-track checkpoint flow support:
 
 ```powershell
 python scripts/new_track_flow.py --repo <repo-root> --title "Implement user authentication"
+```
+
+Apply approved track drafts immediately:
+
+```powershell
+python scripts/apply_new_track_drafts.py --repo <repo-root> --title "Implement user authentication" --spec-file <approved-spec.md> --plan-file <approved-plan.md>
 ```
 
 Implement/review/revert checkpoint flow support:
