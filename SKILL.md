@@ -90,7 +90,9 @@ These remain agent-driven workflow commands backed by deterministic helper scrip
 - For `implement`, use `scripts/sync_project_docs.py --repo <repo-root> --track <track-id>` when the completed track requires project-document synchronization.
 - For `review`, use `scripts/review_flow.py --repo <repo-root>` first to materialize scope, diff range, and review checkpoints, then use `scripts/review_track.py --repo <repo-root>` to prepare scaffolding and update `review.md` with findings, risks, gaps, and decision.
 - For `revert`, use `scripts/revert_flow.py --repo <repo-root>` first to materialize candidates, target scope, and rollback checkpoints, then use `scripts/revert_track.py --repo <repo-root>` to enumerate commits and revert order before executing the rollback.
+- After `review` or `revert`, use `scripts/repair_track_state.py --repo <repo-root> --track <track-id> --status <new|in_progress|completed>` to realign `metadata.json`, `tracks.md`, and indexes when the logical track state changed.
 - For cleanup after `implement` or `review`, use `scripts/cleanup_track.py --repo <repo-root> --track <track-id> --action <archive|delete|skip>`.
+- Before cleanup after `implement` or `review`, use `scripts/cleanup_flow.py --repo <repo-root> --track <track-id>` to materialize the user choice set and guardrails.
 
 ### Skills Catalog
 

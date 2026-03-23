@@ -59,6 +59,8 @@ Check that these files exist:
 - `scripts/review_track.py`
 - `scripts/revert_flow.py`
 - `scripts/revert_track.py`
+- `scripts/repair_track_state.py`
+- `scripts/cleanup_flow.py`
 - `scripts/install_skills.py`
 - `scripts/sync_project_docs.py`
 - `scripts/cleanup_track.py`
@@ -157,6 +159,8 @@ Use these to inspect guided lifecycle checkpoints before the mutating helper ste
 python scripts/implement_flow.py --repo <repo-root>
 python scripts/review_flow.py --repo <repo-root>
 python scripts/revert_flow.py --repo <repo-root> --candidates
+python scripts/cleanup_flow.py --repo <repo-root>
+python scripts/repair_track_state.py --repo <repo-root> --track <track-id> --status in_progress
 ```
 
 ## Update an Existing Installation

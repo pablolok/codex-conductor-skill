@@ -29,6 +29,8 @@ Key helper scripts now include:
 - `scripts/review_track.py`
 - `scripts/revert_flow.py`
 - `scripts/revert_track.py`
+- `scripts/repair_track_state.py`
+- `scripts/cleanup_flow.py`
 - `scripts/install_skills.py`
 - `scripts/sync_project_docs.py`
 - `scripts/cleanup_track.py`
@@ -143,6 +145,8 @@ Implement/review/revert checkpoint flow support:
 python scripts/implement_flow.py --repo <repo-root>
 python scripts/review_flow.py --repo <repo-root>
 python scripts/revert_flow.py --repo <repo-root> --candidates
+python scripts/cleanup_flow.py --repo <repo-root>
+python scripts/repair_track_state.py --repo <repo-root> --track <track-id> --status in_progress
 ```
 
 Skills install support:
