@@ -139,6 +139,28 @@ class ReviewRuntimeTests(unittest.TestCase):
             self.assertEqual(state["stage"], "confirm_delete")
             self.assertEqual(state["confirmation"]["type"], "yesno")
 
+    def test_commit_changes_execute_commits_non_track_review_changes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
+            subprocess.run(["git", "config", "user.name", "Test User"], cwd=repo, check=True, capture_output=True)
+            subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True, capture_output=True)
+            (repo / "README.md").write_text("start\n", encoding="utf-8")
+            subprocess.run(["git", "add", "README.md"], cwd=repo, check=True, capture_output=True)
+            subprocess.run(["git", "commit", "-m", "initial"], cwd=repo, check=True, capture_output=True)
+            (repo / "README.md").write_text("updated\n", encoding="utf-8")
+            (repo / "conductor").mkdir()
+            (repo / "conductor" / "tracks.md").write_text("---\n", encoding="utf-8")
+            (repo / "conductor" / "workflow.md").write_text("# Workflow\n", encoding="utf-8")
+            (repo / "conductor" / "product.md").write_text("# Product\n", encoding="utf-8")
+            (repo / "conductor" / "tech-stack.md").write_text("# Tech Stack\n", encoding="utf-8")
+            (repo / "conductor" / "product-guidelines.md").write_text("# Product Guidelines\n", encoding="utf-8")
+
+            state = advance_review_runtime(repo, None, "commit_changes_execute")
+
+            self.assertEqual(state["stage"], "completed")
+            self.assertTrue(state["commit_result"]["committed"])
+
 
 if __name__ == "__main__":
     unittest.main()

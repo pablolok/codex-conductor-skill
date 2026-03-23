@@ -7,6 +7,7 @@ from pathlib import Path
 
 from cleanup_flow import build_cleanup_flow
 from cleanup_track import execute_cleanup_action
+from commit_review_changes import commit_review_changes
 from conductor_fs import require_canonical_workspace
 from review_flow import build_review_flow
 
@@ -124,6 +125,14 @@ def advance_review_runtime(
             "cleanup_result": result,
         }
 
+    if action == "commit_changes_execute":
+        if track_ref:
+            raise SystemExit("commit_changes_execute is only for non-track review changes.")
+        return {
+            "stage": "completed",
+            "commit_result": commit_review_changes(repo),
+        }
+
     raise SystemExit(f"Unsupported review runtime action '{action}'.")
 
 
@@ -131,7 +140,11 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True)
     parser.add_argument("--track")
-    parser.add_argument("--action", choices=["start", "apply_fixes", "manual_fix", "complete", "cleanup_execute"], required=True)
+    parser.add_argument(
+        "--action",
+        choices=["start", "apply_fixes", "manual_fix", "complete", "cleanup_execute", "commit_changes_execute"],
+        required=True,
+    )
     parser.add_argument("--cleanup-action", choices=["archive", "delete", "skip"])
     parser.add_argument("--confirmed", action="store_true")
     args = parser.parse_args()
