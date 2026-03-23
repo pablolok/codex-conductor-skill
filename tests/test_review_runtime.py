@@ -118,6 +118,27 @@ class ReviewRuntimeTests(unittest.TestCase):
             self.assertEqual(state["stage"], "commit_review_changes")
             self.assertEqual(state["commit_confirmation"]["type"], "yesno")
 
+    def test_cleanup_execute_archive_runs_cleanup_helper(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            write_track(repo)
+
+            state = advance_review_runtime(repo, "sample_20260323", "cleanup_execute", cleanup_action="archive")
+
+            self.assertEqual(state["stage"], "completed")
+            self.assertEqual(state["cleanup_result"]["action"], "archive")
+            self.assertEqual(state["cleanup_result"]["committed"], True)
+
+    def test_cleanup_execute_delete_requires_confirmation_first(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            write_track(repo)
+
+            state = advance_review_runtime(repo, "sample_20260323", "cleanup_execute", cleanup_action="delete")
+
+            self.assertEqual(state["stage"], "confirm_delete")
+            self.assertEqual(state["confirmation"]["type"], "yesno")
+
 
 if __name__ == "__main__":
     unittest.main()

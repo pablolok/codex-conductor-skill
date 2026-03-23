@@ -11,6 +11,7 @@
 - Record findings, risks, gaps, and decision in `review.md`.
 - If the review changes the logical track state, run `scripts/repair_track_state.py` before cleanup.
 - If review fixes are applied, use `scripts/commit_review_fixes.py` to enforce the review-fix code commit and plan-update commit sequence.
+- Use `scripts/review_runtime.py --action cleanup_execute` to execute archive, delete, or skip after review, including delete confirmation and cleanup commits.
 
 ## Revert
 

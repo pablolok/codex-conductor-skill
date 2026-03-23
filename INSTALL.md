@@ -208,6 +208,8 @@ python scripts/review_flow.py --repo <repo-root> --run-tests
 python scripts/review_runtime.py --repo <repo-root> --track <track-id> --action start
 python scripts/review_runtime.py --repo <repo-root> --track <track-id> --action apply_fixes
 python scripts/review_runtime.py --repo <repo-root> --track <track-id> --action complete
+python scripts/review_runtime.py --repo <repo-root> --track <track-id> --action cleanup_execute --cleanup-action archive
+python scripts/review_runtime.py --repo <repo-root> --track <track-id> --action cleanup_execute --cleanup-action delete --confirmed
 python scripts/commit_review_fixes.py --repo <repo-root> --message "fix(conductor): Apply review suggestions"
 python scripts/revert_flow.py --repo <repo-root> --candidates
 python scripts/revert_runtime.py --repo <repo-root> --action start

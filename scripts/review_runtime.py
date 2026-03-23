@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 
 from cleanup_flow import build_cleanup_flow
+from cleanup_track import execute_cleanup_action
 from conductor_fs import require_canonical_workspace
 from review_flow import build_review_flow
 
@@ -38,7 +39,13 @@ def run_review_track(repo: Path, track_ref: str, prepare: bool = False) -> dict[
     return json.loads(result.stdout)
 
 
-def advance_review_runtime(repo: Path, track_ref: str | None, action: str) -> dict[str, object]:
+def advance_review_runtime(
+    repo: Path,
+    track_ref: str | None,
+    action: str,
+    cleanup_action: str | None = None,
+    confirmed: bool = False,
+) -> dict[str, object]:
     require_canonical_workspace(repo / "conductor")
 
     if action == "start":
@@ -97,6 +104,26 @@ def advance_review_runtime(repo: Path, track_ref: str | None, action: str) -> di
             "cleanup": build_cleanup_flow(repo, track_ref),
         }
 
+    if action == "cleanup_execute":
+        if not track_ref:
+            raise SystemExit("A track is required to execute review cleanup.")
+        if cleanup_action not in {"archive", "delete", "skip"}:
+            raise SystemExit("cleanup_execute requires --cleanup-action archive|delete|skip.")
+        if cleanup_action == "delete" and not confirmed:
+            return {
+                "stage": "confirm_delete",
+                "confirmation": {
+                    "header": "Confirm",
+                    "question": "WARNING: This is an irreversible deletion. Do you want to proceed?",
+                    "type": "yesno",
+                },
+            }
+        result = execute_cleanup_action(repo, track_ref, cleanup_action, commit_changes=cleanup_action != "skip")
+        return {
+            "stage": "completed",
+            "cleanup_result": result,
+        }
+
     raise SystemExit(f"Unsupported review runtime action '{action}'.")
 
 
@@ -104,11 +131,13 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True)
     parser.add_argument("--track")
-    parser.add_argument("--action", choices=["start", "apply_fixes", "manual_fix", "complete"], required=True)
+    parser.add_argument("--action", choices=["start", "apply_fixes", "manual_fix", "complete", "cleanup_execute"], required=True)
+    parser.add_argument("--cleanup-action", choices=["archive", "delete", "skip"])
+    parser.add_argument("--confirmed", action="store_true")
     args = parser.parse_args()
 
     repo = Path(args.repo).resolve()
-    print(json.dumps(advance_review_runtime(repo, args.track, args.action), indent=2))
+    print(json.dumps(advance_review_runtime(repo, args.track, args.action, args.cleanup_action, args.confirmed), indent=2))
 
 
 if __name__ == "__main__":
