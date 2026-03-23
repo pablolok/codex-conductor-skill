@@ -39,6 +39,31 @@ def audit_existing_artifacts(conductor_dir: Path) -> dict[str, bool]:
     }
 
 
+def determine_resume_target(artifacts: dict[str, bool], conductor_dir: Path) -> dict[str, str]:
+    tracks_root = conductor_dir / "tracks"
+    has_complete_track = False
+    if tracks_root.exists():
+        for child in tracks_root.iterdir():
+            if not child.is_dir():
+                continue
+            if all((child / name).exists() for name in ("spec.md", "plan.md", "metadata.json", "index.md")):
+                has_complete_track = True
+                break
+    if has_complete_track:
+        return {"target_section": "HALT", "announcement": "The project is already initialized. Use conductor:newTrack or conductor:implement."}
+    if artifacts["index"]:
+        return {"target_section": "3.0", "announcement": "Resuming setup: shared context is complete. Next: generate or refine the first track."}
+    if artifacts["workflow"]:
+        return {"target_section": "2.6", "announcement": "Resuming setup: workflow is defined. Next: select agent skills."}
+    if artifacts["tech_stack"]:
+        return {"target_section": "2.5", "announcement": "Resuming setup: tech stack is defined. Next: define workflow and skills."}
+    if artifacts["product_guidelines"]:
+        return {"target_section": "2.3", "announcement": "Resuming setup: product guidelines are complete. Next: define the technology stack."}
+    if artifacts["product"]:
+        return {"target_section": "2.2", "announcement": "Resuming setup: product definition is complete. Next: create product guidelines."}
+    return {"target_section": "2.0", "announcement": "Starting setup from project discovery."}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True)
@@ -68,6 +93,7 @@ def main() -> None:
         "styleguides": detect_styleguide_names(repo),
         "recommended_skills": recommend_skills(catalog_path, context),
     }
+    output["resume"] = determine_resume_target(output["existing_artifacts"], conductor_dir)
     print(json.dumps(output, indent=2))
 
 

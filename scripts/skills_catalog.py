@@ -7,6 +7,9 @@ from pathlib import Path
 from conductor_fs import read_text
 
 
+GENERIC_KEYWORDS = {"setup", "deployment", "architectural design", "pipeline design", "database", "auth"}
+
+
 def load_catalog(path: Path) -> list[dict]:
     items: list[dict] = []
     current: dict | None = None
@@ -53,7 +56,10 @@ def recommend_skills(catalog_path: Path, context: str) -> list[dict]:
             if dependency.lower() in context_lower:
                 score += 2
         for keyword in item.get("keywords", []):
-            if keyword.lower() in context_lower:
+            normalized = keyword.lower()
+            if normalized in GENERIC_KEYWORDS:
+                continue
+            if normalized in context_lower:
                 score += 1
         if score > 0:
             enriched = dict(item)
