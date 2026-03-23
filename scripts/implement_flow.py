@@ -59,6 +59,8 @@ def build_task_summary(track_dir: Path) -> dict[str, object]:
             "requires_phase_checkpoints": workflow_policy["requires_phase_checkpoints"],
             "requires_verification_commit": workflow_policy["requires_verification_commit"],
             "coverage_target": workflow_policy["coverage_target"],
+            "daily_development_commands": workflow_policy["daily_development_commands"],
+            "before_commit_commands": workflow_policy["before_commit_commands"],
         },
         "skills": {
             "installed_recommendations": skill_partition["installed"],

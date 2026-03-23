@@ -35,6 +35,27 @@ class WorkflowPolicyTests(unittest.TestCase):
         self.assertTrue(policy["requires_phase_checkpoints"])
         self.assertTrue(policy["requires_verification_commit"])
 
+    def test_parse_workflow_policy_extracts_command_blocks(self) -> None:
+        text = """# Workflow
+
+## Development Commands
+
+### Daily Development
+```bash
+npm run dev
+npm test
+```
+
+### Before Committing
+```bash
+npm run check
+```
+"""
+        policy = parse_workflow_policy(text)
+
+        self.assertEqual(policy["daily_development_commands"], ["npm run dev", "npm test"])
+        self.assertEqual(policy["before_commit_commands"], ["npm run check"])
+
 
 if __name__ == "__main__":
     unittest.main()

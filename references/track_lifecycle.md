@@ -32,3 +32,4 @@ Lifecycle expectations:
 17. `scripts/implement_runtime.py --action doc_sync_execute --approved-paths ...` should apply only the approved project-document sync changes before cleanup begins.
 18. `scripts/draft_new_track.py` may be used to generate first-pass `spec.md` and `plan.md` content before the interactive confirmation loop.
 19. Workflow-dependent runtime branches should be derived from the parsed contents of `conductor/workflow.md`, not from scattered one-off string checks.
+20. Parsed workflow command blocks such as daily-development and before-commit commands should be surfaced to the active implement flow when they exist.
