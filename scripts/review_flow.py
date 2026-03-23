@@ -6,6 +6,7 @@ from pathlib import Path
 
 from conductor_fs import load_metadata, require_canonical_workspace
 from review_track import build_review_report, detect_scope
+from skills_catalog import installed_skill_names, partition_recommended_skills, recommend_skills
 
 
 def classify_diff_strategy(shortstat: str) -> dict[str, object]:
@@ -37,6 +38,16 @@ def build_review_flow(repo: Path, track_ref: str | None) -> dict[str, object]:
     report = build_review_report(track_dir, repo)
     metadata = load_metadata(track_dir)
     strategy = classify_diff_strategy(report["shortstat"])
+    context = "\n".join(
+        [
+            (repo / "AGENTS.md").read_text(encoding="utf-8") if (repo / "AGENTS.md").exists() else "",
+            (track_dir.parents[1] / "tech-stack.md").read_text(encoding="utf-8") if (track_dir.parents[1] / "tech-stack.md").exists() else "",
+            (track_dir / "spec.md").read_text(encoding="utf-8") if (track_dir / "spec.md").exists() else "",
+            (track_dir / "plan.md").read_text(encoding="utf-8") if (track_dir / "plan.md").exists() else "",
+        ]
+    )
+    recommendations = recommend_skills(Path(__file__).resolve().parents[1] / "skills" / "catalog.md", context)
+    skill_partition = partition_recommended_skills(recommendations, installed_skill_names(repo))
     return {
         "track": {
             "track_id": metadata["track_id"],
@@ -46,6 +57,11 @@ def build_review_flow(repo: Path, track_ref: str | None) -> dict[str, object]:
         "scope": report,
         "diff_strategy": strategy,
         "test_command": infer_test_command(repo),
+        "skills": {
+            "installed_recommendations": skill_partition["installed"],
+            "missing_recommendations": skill_partition["missing"],
+            "reload_required_if_installed": bool(skill_partition["missing"]),
+        },
         "scope_confirmation": {
             "header": "Confirm Scope",
             "question": f"I will review '{metadata.get('title', metadata['description'])}'. Is this correct?",

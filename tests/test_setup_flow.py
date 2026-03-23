@@ -27,6 +27,8 @@ class SetupFlowTests(unittest.TestCase):
             labels = [option["label"] for option in skill_checkpoint["question"]["options"]]
             self.assertEqual(labels, ["Install All", "Hand-pick", "Skip"])
             self.assertIn("hand_pick_prompt", skill_checkpoint)
+            self.assertIn("installed_recommendations", skill_checkpoint)
+            self.assertIn("missing_recommendations", skill_checkpoint)
 
     def test_setup_flow_batches_styleguide_library_options(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

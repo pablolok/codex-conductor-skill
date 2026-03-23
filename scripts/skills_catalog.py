@@ -10,6 +10,17 @@ from conductor_fs import read_text
 GENERIC_KEYWORDS = {"setup", "deployment", "architectural design", "pipeline design", "database", "auth"}
 
 
+def gemini_skills_root(repo: Path) -> Path:
+    return repo / ".gemini" / "skills"
+
+
+def installed_skill_names(repo: Path) -> set[str]:
+    root = gemini_skills_root(repo)
+    if not root.exists():
+        return set()
+    return {item.name for item in root.iterdir() if item.is_dir()}
+
+
 def load_catalog(path: Path) -> list[dict]:
     items: list[dict] = []
     current: dict | None = None
@@ -67,6 +78,15 @@ def recommend_skills(catalog_path: Path, context: str) -> list[dict]:
             recommendations.append(enriched)
     recommendations.sort(key=lambda item: (-item["score"], item["name"]))
     return recommendations
+
+
+def partition_recommended_skills(recommendations: list[dict], installed: set[str]) -> dict[str, list[dict]]:
+    present: list[dict] = []
+    missing: list[dict] = []
+    for item in recommendations:
+        bucket = present if item["name"] in installed else missing
+        bucket.append(item)
+    return {"installed": present, "missing": missing}
 
 
 if __name__ == "__main__":

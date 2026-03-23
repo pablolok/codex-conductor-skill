@@ -168,6 +168,8 @@ Skills install support:
 python scripts/install_skills.py --repo <repo-root> --catalog skills/catalog.md --skills <skill-name>
 ```
 
+This installs the canonical Gemini skill payload into `.gemini/skills/<skill-name>/` and writes the matching Codex bridge entry into `.codex/skills/<skill-name>/SKILL.md`.
+
 ## Publish As Its Own Repo
 
 If you want to publish this as a separate repository:

@@ -14,7 +14,7 @@ from conductor_fs import (
     slugify_short_name,
 )
 from draft_new_track import render_with
-from skills_catalog import recommend_skills
+from skills_catalog import installed_skill_names, partition_recommended_skills, recommend_skills
 
 
 def approval_question(header: str, body: str, approve: str, revise: str) -> dict[str, object]:
@@ -163,6 +163,7 @@ def build_new_track_flow(repo: Path, title: str) -> dict[str, object]:
     )
     catalog_path = Path(__file__).resolve().parents[1] / "skills" / "catalog.md"
     recommendations = recommend_skills(catalog_path, context)
+    skill_partition = partition_recommended_skills(recommendations, installed_skill_names(repo))
     checkpoints: list[dict[str, object]] = [
         {
             "kind": "branch",
@@ -218,6 +219,8 @@ def build_new_track_flow(repo: Path, title: str) -> dict[str, object]:
                         {"label": item["name"], "description": item["description"]} for item in recommendations
                     ],
                 },
+                "installed_recommendations": skill_partition["installed"],
+                "missing_recommendations": skill_partition["missing"],
                 "reload_instruction": "New skills installed. Please run `/skills reload` and confirm before continuing.",
             }
         )

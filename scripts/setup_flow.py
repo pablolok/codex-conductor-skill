@@ -9,7 +9,7 @@ from conversation_state import session_blueprint
 from conductor_fs import detect_styleguide_names, detect_workspace_kind, infer_product_name, read_text
 from draft_setup_docs import build_guidelines, build_product, build_tech_stack, build_workflow
 from setup_workspace import audit_existing_artifacts, detect_project_maturity, determine_resume_target
-from skills_catalog import recommend_skills
+from skills_catalog import installed_skill_names, partition_recommended_skills, recommend_skills
 
 
 def git_has_uncommitted_changes(repo: Path) -> bool:
@@ -329,6 +329,7 @@ def build_setup_flow(repo: Path, skill_root: Path) -> dict[str, object]:
     product_name = infer_product_name(repo)
     detected_stack = read_text(conductor_dir / "tech-stack.md") or drafts["tech-stack.md"]
     recommendations = recommend_skills(catalog_path, context)
+    skill_partition = partition_recommended_skills(recommendations, installed_skill_names(repo))
     checkpoints = [
         {
             "kind": "permission",
@@ -400,6 +401,8 @@ def build_setup_flow(repo: Path, skill_root: Path) -> dict[str, object]:
                 ],
             },
             "recommended_skills": recommendations,
+            "installed_recommendations": skill_partition["installed"],
+            "missing_recommendations": skill_partition["missing"],
             "hand_pick_prompt": {
                 "header": "Select Skills",
                 "question": "Which skills would you like to install? Type the names separated by commas.",

@@ -157,6 +157,8 @@ Use this when the setup or new-track flow recommends skill installation:
 python scripts/install_skills.py --repo <repo-root> --catalog skills/catalog.md --skills <skill-name>
 ```
 
+The installer writes Gemini skill payloads into `.gemini/skills/` and refreshes the corresponding Codex bridge wrappers in `.codex/skills/`.
+
 Use this to inspect the guided new-track checkpoints before materializing the track:
 
 ```powershell

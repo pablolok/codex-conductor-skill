@@ -104,7 +104,7 @@ These remain agent-driven workflow commands backed by deterministic helper scrip
 - Use `skills/catalog.md` as the local mirror of the upstream Conductor skills catalog.
 - Use `scripts/skills_catalog.py` to load and score recommendations from repository context, `conductor/tech-stack.md`, `spec.md`, and `plan.md`.
 - Preserve the upstream choice points: install all, hand-pick, or skip.
-- Use `scripts/install_skills.py --repo <repo-root> --catalog skills/catalog.md --skills <skill>...` to install selected skills into workspace-local `.agents/skills/`.
+- Use `scripts/install_skills.py --repo <repo-root> --catalog skills/catalog.md --skills <skill>...` to install selected skills into workspace-local `.gemini/skills/` and refresh the corresponding `.codex/skills/` bridge wrappers.
 
 Read `references/track_lifecycle.md`, `references/review_revert_archive.md`, and `references/artifact_sync.md` when handling these commands.
 

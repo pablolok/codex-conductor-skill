@@ -13,15 +13,26 @@ from conductor_fs import (
     require_canonical_workspace,
     resolve_track_dir,
 )
+from skills_catalog import installed_skill_names, partition_recommended_skills, recommend_skills
 
 
 def build_task_summary(track_dir: Path) -> dict[str, object]:
+    repo = track_dir.parents[2]
     metadata = load_metadata(track_dir)
     plan_path = track_dir / "plan.md"
     current = find_in_progress_task(plan_path)
     next_task = current or find_first_incomplete_task(plan_path)
     phases = parse_plan(plan_path)
     workflow_text = read_text(track_dir.parents[1] / "workflow.md")
+    context = "\n".join(
+        [
+            read_text(track_dir.parents[1] / "tech-stack.md"),
+            read_text(track_dir / "spec.md"),
+            read_text(plan_path),
+        ]
+    )
+    recommendations = recommend_skills(Path(__file__).resolve().parents[1] / "skills" / "catalog.md", context)
+    skill_partition = partition_recommended_skills(recommendations, installed_skill_names(repo))
     return {
         "track": {
             "track_id": metadata["track_id"],
@@ -35,6 +46,11 @@ def build_task_summary(track_dir: Path) -> dict[str, object]:
             "requires_git_notes": "git notes" in workflow_text.lower(),
             "requires_phase_checkpoints": "Phase Completion Verification and Checkpointing Protocol" in workflow_text,
             "coverage_target": next((line.split(":", 1)[1].strip() for line in workflow_text.splitlines() if "Coverage target:" in line), "unspecified"),
+        },
+        "skills": {
+            "installed_recommendations": skill_partition["installed"],
+            "missing_recommendations": skill_partition["missing"],
+            "reload_required_if_installed": bool(skill_partition["missing"]),
         },
         "phases": [
             {
