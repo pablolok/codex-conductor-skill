@@ -15,6 +15,30 @@ def now_utc() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+def command_alias_path(repo: Path, command: str) -> Path:
+    return session_root(repo) / f"{command}.json"
+
+
+def resolve_session_path(path: Path) -> Path:
+    if not path.exists():
+        raise FileNotFoundError(path)
+    state = json.loads(path.read_text(encoding="utf-8"))
+    active = state.get("active_session")
+    if active:
+        return path.parent / active
+    return path
+
+
+def write_command_alias(repo: Path, command: str, session_file: Path) -> None:
+    alias = command_alias_path(repo, command)
+    payload = {
+        "command": command,
+        "active_session": session_file.name,
+        "updated_at": now_utc(),
+    }
+    alias.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
 def init_session(repo: Path, command: str, target: str | None = None) -> dict[str, object]:
     root = session_root(repo)
     root.mkdir(parents=True, exist_ok=True)
@@ -30,12 +54,15 @@ def init_session(repo: Path, command: str, target: str | None = None) -> dict[st
         "history": [],
     }
     path.write_text(json.dumps(state, indent=2), encoding="utf-8")
+    write_command_alias(repo, command, path)
     state["path"] = str(path)
+    state["alias_path"] = str(command_alias_path(repo, command))
     return state
 
 
 def update_session(path: Path, checkpoint: int, decision: str, notes: str | None = None) -> dict[str, object]:
-    state = json.loads(path.read_text(encoding="utf-8"))
+    resolved = resolve_session_path(path)
+    state = json.loads(resolved.read_text(encoding="utf-8"))
     state["current_checkpoint"] = checkpoint
     state["updated_at"] = now_utc()
     state.setdefault("history", []).append(
@@ -46,20 +73,21 @@ def update_session(path: Path, checkpoint: int, decision: str, notes: str | None
             "notes": notes or "",
         }
     )
-    path.write_text(json.dumps(state, indent=2), encoding="utf-8")
+    resolved.write_text(json.dumps(state, indent=2), encoding="utf-8")
     return state
 
 
 def close_session(path: Path, status: str) -> dict[str, object]:
-    state = json.loads(path.read_text(encoding="utf-8"))
+    resolved = resolve_session_path(path)
+    state = json.loads(resolved.read_text(encoding="utf-8"))
     state["status"] = status
     state["updated_at"] = now_utc()
-    path.write_text(json.dumps(state, indent=2), encoding="utf-8")
+    resolved.write_text(json.dumps(state, indent=2), encoding="utf-8")
     return state
 
 
 def session_blueprint(repo: Path, command: str, target: str | None = None) -> dict[str, object]:
-    path = session_root(repo) / f"{command}.json"
+    path = command_alias_path(repo, command)
     return {
         "command": command,
         "target": target,

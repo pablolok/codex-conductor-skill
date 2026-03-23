@@ -29,14 +29,62 @@ def force_rmtree(path: Path) -> None:
         shutil.rmtree(path, onerror=onerror)
 
 
+def gemini_skills_root(workspace_root: Path) -> Path:
+    return workspace_root / ".gemini" / "skills"
+
+
+def codex_skills_root(workspace_root: Path) -> Path:
+    return workspace_root / ".codex" / "skills"
+
+
+def codex_bridge_content(skill_name: str) -> str:
+    title = skill_name.replace("-", " ").title()
+    return "\n".join(
+        [
+            "---",
+            f"name: {skill_name}",
+            f"description: A Codex bridge for the canonical Gemini {skill_name} skill.",
+            "---",
+            "",
+            f"# {title} Bridge",
+            "",
+            f"Use the installed Gemini skill at `.gemini/skills/{skill_name}/SKILL.md` as the source of truth.",
+            "",
+            "Workflow:",
+            "",
+            f"1. Read and follow `.gemini/skills/{skill_name}/SKILL.md`.",
+            f"2. If that skill references scripts, metadata, or companion files, resolve them from `.gemini/skills/{skill_name}/`.",
+            "3. Do not treat this bridge folder as the implementation source. It exists only so Codex can discover the skill without copying the Gemini payload.",
+            "",
+            "## Codex Integration",
+            "",
+            "For Codex-managed projects, keep the responsibilities split:",
+            "",
+            "- `.gemini/skills/` contains the actual Gemini/Conductor skill implementations.",
+            "- `.codex/skills/` contains only Codex bridges and Codex-specific integration notes.",
+            "",
+            "When installing, updating, or auditing skills from Codex, preserve both layers. Do not replace Gemini skills with Codex wrappers and do not copy full Gemini payloads into `.codex/skills`.",
+            "",
+        ]
+    )
+
+
+def write_codex_bridge(workspace_root: Path, skill_name: str) -> Path:
+    bridge_dir = codex_skills_root(workspace_root) / skill_name
+    bridge_dir.mkdir(parents=True, exist_ok=True)
+    skill_path = bridge_dir / "SKILL.md"
+    skill_path.write_text(codex_bridge_content(skill_name), encoding="utf-8")
+    return skill_path
+
+
 def install_one(workspace_root: Path, catalog_item: dict) -> dict:
-    skills_root = workspace_root / ".agents" / "skills"
+    skills_root = gemini_skills_root(workspace_root)
     skills_root.mkdir(parents=True, exist_ok=True)
     destination = skills_root / catalog_item["name"]
     if destination.exists():
         force_rmtree(destination)
     repo_url, branch, folder = github_folder_from_raw(catalog_item["url"])
-    temp_dir = workspace_root / ".agents" / ".tmp" / catalog_item["name"]
+    temp_dir = workspace_root / ".gemini" / ".tmp" / catalog_item["name"]
     if temp_dir.exists():
         force_rmtree(temp_dir)
     temp_dir.parent.mkdir(parents=True, exist_ok=True)
@@ -47,9 +95,11 @@ def install_one(workspace_root: Path, catalog_item: dict) -> dict:
         raise SystemExit(f"Skill source folder not found after sparse checkout: {folder}")
     shutil.copytree(source, destination)
     force_rmtree(temp_dir)
+    bridge = write_codex_bridge(workspace_root, catalog_item["name"])
     return {
         "name": catalog_item["name"],
         "destination": str(destination),
+        "codex_bridge": str(bridge),
         "url": catalog_item["url"],
     }
 

@@ -36,9 +36,44 @@ def find_phase_line(plan_path: Path, phase_name: str) -> int:
     raise SystemExit(f"Phase '{phase_name}' not found in plan.")
 
 
-def stage_code_changes(repo: Path, plan_path: Path, verify_path: Path) -> None:
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True)
-    subprocess.run(["git", "reset", "HEAD", "--", str(plan_path), str(verify_path)], cwd=repo, check=True)
+def repo_relative(repo: Path, path: Path | str) -> str:
+    candidate = Path(path)
+    if not candidate.is_absolute():
+        candidate = (repo / candidate).resolve()
+    return candidate.relative_to(repo).as_posix()
+
+
+def stage_selected_paths(repo: Path, paths: list[str]) -> None:
+    if not paths:
+        return
+    normalized = [repo_relative(repo, path) for path in paths]
+    subprocess.run(["git", "add", "--", *normalized], cwd=repo, check=True)
+
+
+def unstage_paths(repo: Path, paths: list[str]) -> None:
+    if not paths:
+        return
+    subprocess.run(["git", "reset", "HEAD", "--", *paths], cwd=repo, check=True)
+
+
+def staged_paths(repo: Path) -> list[str]:
+    result = subprocess.run(
+        ["git", "diff", "--cached", "--name-only", "--relative"],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    return [line.strip().replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
+
+
+def ensure_no_staged_conductor_changes(repo: Path, conductor_dir: Path, allowed: set[str] | None = None) -> None:
+    root = repo_relative(repo, conductor_dir)
+    allowed = allowed or set()
+    blocked = [path for path in staged_paths(repo) if path.startswith(f"{root}/") and path not in allowed]
+    if blocked:
+        joined = ", ".join(blocked)
+        raise SystemExit(f"Code commit contains staged conductor artifacts: {joined}. Stage only implementation files.")
 
 
 def has_staged_changes(repo: Path) -> bool:
@@ -55,6 +90,7 @@ def main() -> None:
     parser.add_argument("--note-summary")
     parser.add_argument("--phase-checkpoint")
     parser.add_argument("--verify-message")
+    parser.add_argument("--paths", nargs="*")
     args = parser.parse_args()
 
     repo = Path(args.repo).resolve()
@@ -69,7 +105,9 @@ def main() -> None:
     if task is None:
         raise SystemExit("No in-progress task found to commit.")
 
-    stage_code_changes(repo, plan_path, verify_path)
+    stage_selected_paths(repo, args.paths or [])
+    unstage_paths(repo, [repo_relative(repo, plan_path), repo_relative(repo, verify_path)])
+    ensure_no_staged_conductor_changes(repo, conductor_dir)
     if not has_staged_changes(repo):
         raise SystemExit("No staged code changes found for the active task.")
     subprocess.run(["git", "commit", "-m", args.code_message], cwd=repo, check=True)

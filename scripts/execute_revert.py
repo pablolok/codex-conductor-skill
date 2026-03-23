@@ -29,6 +29,10 @@ def try_revert(repo: Path, sha: str) -> dict[str, str]:
     }
 
 
+def abort_revert(repo: Path) -> None:
+    subprocess.run(["git", "revert", "--abort"], cwd=repo, capture_output=True, text=True, check=False)
+
+
 def infer_reset_status(track_dir: Path) -> str:
     plan_path = track_dir / "plan.md"
     current = find_in_progress_task(plan_path)
@@ -61,6 +65,7 @@ def main() -> None:
         result = try_revert(repo, commit["sha"])
         results.append(result)
         if result["returncode"] != "0":
+            abort_revert(repo)
             print(json.dumps({"track": track_dir.name, "results": results, "conflict": True}, indent=2))
             return
 

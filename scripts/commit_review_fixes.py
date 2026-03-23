@@ -22,12 +22,58 @@ def run_git(repo: Path, args: list[str]) -> str:
     return result.stdout.strip()
 
 
+def repo_relative(repo: Path, path: Path | str) -> str:
+    candidate = Path(path)
+    if not candidate.is_absolute():
+        candidate = (repo / candidate).resolve()
+    return candidate.relative_to(repo).as_posix()
+
+
+def stage_selected_paths(repo: Path, paths: list[str]) -> None:
+    if not paths:
+        return
+    normalized = [repo_relative(repo, path) for path in paths]
+    subprocess.run(["git", "add", "--", *normalized], cwd=repo, check=True)
+
+
+def unstage_paths(repo: Path, paths: list[str]) -> None:
+    if not paths:
+        return
+    subprocess.run(["git", "reset", "HEAD", "--", *paths], cwd=repo, check=True)
+
+
+def staged_paths(repo: Path) -> list[str]:
+    result = subprocess.run(
+        ["git", "diff", "--cached", "--name-only", "--relative"],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    return [line.strip().replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
+
+
+def ensure_no_staged_conductor_changes(repo: Path, conductor_dir: Path, allowed: set[str] | None = None) -> None:
+    root = repo_relative(repo, conductor_dir)
+    allowed = allowed or set()
+    blocked = [path for path in staged_paths(repo) if path.startswith(f"{root}/") and path not in allowed]
+    if blocked:
+        joined = ", ".join(blocked)
+        raise SystemExit(f"Review-fix commit contains staged conductor artifacts: {joined}. Stage only implementation files.")
+
+
+def has_staged_changes(repo: Path) -> bool:
+    result = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=repo)
+    return result.returncode == 1
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True)
     parser.add_argument("--track")
     parser.add_argument("--message", required=True)
     parser.add_argument("--plan-message", default="conductor(plan): Mark task 'Apply review suggestions' as complete")
+    parser.add_argument("--paths", nargs="*")
     args = parser.parse_args()
 
     repo = Path(args.repo).resolve()
@@ -54,8 +100,11 @@ def main() -> None:
     if task["marker"] != "~":
         update_task_marker(plan_path, task["line_number"], "~")
 
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True)
-    subprocess.run(["git", "reset", "HEAD", "--", str(plan_path)], cwd=repo, check=True)
+    stage_selected_paths(repo, args.paths or [])
+    unstage_paths(repo, [repo_relative(repo, plan_path)])
+    ensure_no_staged_conductor_changes(repo, conductor_dir)
+    if not has_staged_changes(repo):
+        raise SystemExit("No staged code changes found for the review-fix task.")
     subprocess.run(["git", "commit", "-m", args.message], cwd=repo, check=True)
     code_sha = run_git(repo, ["rev-parse", "--short", "HEAD"])
 
