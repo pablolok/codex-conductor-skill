@@ -208,6 +208,25 @@ class ImplementRuntimeTests(unittest.TestCase):
             self.assertEqual(state["current_task"]["title"], "Task: Second task")
             self.assertIsNotNone(state["commit_result"]["phase_checkpoint"])
 
+    def test_doc_sync_execute_applies_approved_paths_and_returns_cleanup(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            track_dir = write_track(repo)
+            (track_dir / "spec.md").write_text(
+                "# Specification\n\n## Goal\n\nAdd API support for synced auth state.\n",
+                encoding="utf-8",
+            )
+
+            state = advance_implement_runtime(
+                repo,
+                "sample_20260323",
+                "doc_sync_execute",
+                approved_paths=[str(repo / "conductor" / "product.md")],
+            )
+
+            self.assertEqual(state["stage"], "cleanup")
+            self.assertIn("Latest Track Sync", (repo / "conductor" / "product.md").read_text(encoding="utf-8"))
+
 
 if __name__ == "__main__":
     unittest.main()

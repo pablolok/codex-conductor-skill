@@ -108,7 +108,8 @@ def build_sync_payload(repo: Path, track_ref: str | None) -> dict[str, object]:
     }
 
 
-def apply_sync_payload(payload: dict[str, object]) -> None:
+def apply_sync_payload(payload: dict[str, object], approved_paths: set[str] | None = None) -> None:
+    approved_paths = {str(Path(path).resolve()) for path in (approved_paths or set())}
     for path_key, proposal, summary_key in (
         ("product_path", payload["proposals"]["product.md"], "product_definition"),
         ("tech_stack_path", payload["proposals"]["tech-stack.md"], "tech_stack"),
@@ -117,6 +118,8 @@ def apply_sync_payload(payload: dict[str, object]) -> None:
         path = Path(str(payload[path_key]))
         status = payload["summary"].get(summary_key)
         if status != "proposed":
+            continue
+        if approved_paths and str(path.resolve()) not in approved_paths:
             continue
         current = read_text(path)
         if "## Latest Track Sync" in current:

@@ -29,4 +29,5 @@ Lifecycle expectations:
 14. When a workflow requires phase checkpointing, `scripts/implement_runtime.py --action checkpoint_phase` should gate the transition into the next phase or doc-sync handoff.
 15. `scripts/implement_runtime.py --action commit_task` should drive the explicit code-commit then plan-commit branch before moving into the next task, checkpoint, or doc-sync stage.
 16. When verification evidence should be committed as part of a phase boundary, `scripts/implement_runtime.py --action commit_task --verify-message ...` should record that verification commit and use its SHA as the phase checkpoint.
-17. `scripts/draft_new_track.py` may be used to generate first-pass `spec.md` and `plan.md` content before the interactive confirmation loop.
+17. `scripts/implement_runtime.py --action doc_sync_execute --approved-paths ...` should apply only the approved project-document sync changes before cleanup begins.
+18. `scripts/draft_new_track.py` may be used to generate first-pass `spec.md` and `plan.md` content before the interactive confirmation loop.

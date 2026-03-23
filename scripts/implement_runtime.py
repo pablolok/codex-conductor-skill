@@ -22,7 +22,7 @@ from conductor_fs import (
     write_metadata,
 )
 from implement_flow import build_implement_flow
-from sync_project_docs import build_sync_payload
+from sync_project_docs import apply_sync_payload, build_sync_payload
 
 
 def template_base() -> Path:
@@ -198,6 +198,7 @@ def advance_implement_runtime(
     note_summary: str | None = None,
     verify_message: str | None = None,
     paths: list[str] | None = None,
+    approved_paths: list[str] | None = None,
 ) -> dict[str, object]:
     conductor_dir = repo / "conductor"
     require_canonical_workspace(conductor_dir)
@@ -350,6 +351,21 @@ def advance_implement_runtime(
             "cleanup_options": build_cleanup_flow(repo, metadata["track_id"])["options"],
         }
 
+    if action == "doc_sync_execute":
+        if not track_ref:
+            raise SystemExit("doc_sync_execute requires a track.")
+        payload = build_sync_payload(repo, track_ref)
+        apply_sync_payload(payload, approved_paths=set(approved_paths or []))
+        metadata = load_metadata(track_dir)
+        return {
+            "stage": "cleanup",
+            "track": {
+                "track_id": track_dir.name,
+                "title": metadata.get("title", metadata["description"]),
+            },
+            "cleanup": build_cleanup_flow(repo, track_ref),
+        }
+
     raise SystemExit(f"Unsupported implement runtime action '{action}'.")
 
 
@@ -357,13 +373,14 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True)
     parser.add_argument("--track")
-    parser.add_argument("--action", choices=["start", "complete_task", "checkpoint_phase", "commit_task"], required=True)
+    parser.add_argument("--action", choices=["start", "complete_task", "checkpoint_phase", "commit_task", "doc_sync_execute"], required=True)
     parser.add_argument("--sha")
     parser.add_argument("--code-message")
     parser.add_argument("--plan-message")
     parser.add_argument("--note-summary")
     parser.add_argument("--verify-message")
     parser.add_argument("--paths", nargs="*")
+    parser.add_argument("--approved-paths", nargs="*")
     args = parser.parse_args()
 
     repo = Path(args.repo).resolve()
@@ -379,6 +396,7 @@ def main() -> None:
                 args.note_summary,
                 args.verify_message,
                 args.paths,
+                args.approved_paths,
             ),
             indent=2,
         )

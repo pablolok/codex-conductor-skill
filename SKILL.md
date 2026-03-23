@@ -88,7 +88,7 @@ These remain agent-driven workflow commands backed by deterministic helper scrip
 
 - For `implement`, use `scripts/implement_flow.py --repo <repo-root>` first to materialize the active track, task context, workflow checkpoints, and phase status before mutating the plan.
 - For `implement`, use the `track_prompt`, `track_confirmation`, and `cleanup_options` payloads from `scripts/implement_flow.py` to preserve Gemini-style track selection and post-completion cleanup branching.
-- For `implement`, use `scripts/implement_runtime.py --repo <repo-root> --track <track-id> --action <start|complete_task|commit_task|checkpoint_phase>` to advance the runtime state through track start, task progression, task-commit choreography, phase-checkpoint verification, completion, doc-sync handoff, and cleanup handoff.
+- For `implement`, use `scripts/implement_runtime.py --repo <repo-root> --track <track-id> --action <start|complete_task|commit_task|checkpoint_phase|doc_sync_execute>` to advance the runtime state through track start, task progression, task-commit choreography, phase-checkpoint verification, doc-sync application, completion, and cleanup handoff.
 - For `implement`, pass `--verify-message` to the `commit_task` runtime action when workflow verification evidence should be committed and the resulting verification commit should become the phase checkpoint SHA.
 - For `implement`, use `scripts/implement_track.py --repo <repo-root>` to support track selection, registry transitions, task start/completion markers, and track completion transitions.
 - For `implement`, use `scripts/commit_task.py --repo <repo-root>` when the workflow requires the explicit Gemini-style code-commit then plan-commit sequence for a task.
