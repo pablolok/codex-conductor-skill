@@ -6,6 +6,7 @@
 - Consider whether the recorded commit history matches the workflow recorded in `conductor/workflow.md`.
 - Consider whether the verification evidence is consistent with the approved coverage target.
 - Use deterministic helpers to derive scope, diff range, and revert candidates before the agent takes mutating steps.
+- Use `scripts/review_flow.py` to materialize the review checkpoint sequence before mutating `review.md`.
 - Record findings, risks, gaps, and decision in `review.md`.
 
 ## Revert
@@ -13,6 +14,7 @@
 - Scope the revert to a track, phase, or task/sub-task.
 - Reconcile git history with the logical work described in the track files and the canonical registry in `conductor/tracks.md`.
 - Preserve task SHA and phase checkpoint annotations when they already exist in `plan.md`.
+- Use `scripts/revert_flow.py` to materialize the rollback candidates and repair checklist before mutating git history.
 - Realign `plan.md`, `review.md`, `verify.md`, `metadata.json`, and indexes after the revert.
 
 ## Archive

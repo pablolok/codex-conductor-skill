@@ -46,13 +46,18 @@ Check that these files exist:
 - `references/artifact_sync.md`
 - `scripts/bootstrap_conductor.py`
 - `scripts/setup_workspace.py`
+- `scripts/setup_flow.py`
 - `scripts/draft_setup_docs.py`
 - `scripts/migrate_workspace.py`
 - `scripts/new_track.py`
+- `scripts/new_track_flow.py`
 - `scripts/draft_new_track.py`
+- `scripts/implement_flow.py`
 - `scripts/implement_track.py`
 - `scripts/git_notes_helper.py`
+- `scripts/review_flow.py`
 - `scripts/review_track.py`
+- `scripts/revert_flow.py`
 - `scripts/revert_track.py`
 - `scripts/install_skills.py`
 - `scripts/sync_project_docs.py`
@@ -104,6 +109,12 @@ Use this to inspect project maturity, resumable setup state, and recommended ski
 python scripts/setup_workspace.py --repo <repo-root>
 ```
 
+Use this to inspect the guided setup checkpoints that should be followed:
+
+```powershell
+python scripts/setup_flow.py --repo <repo-root>
+```
+
 ## Materialize a Repository Context
 
 Run the materialization step against a target repository:
@@ -132,6 +143,20 @@ Use this when the setup or new-track flow recommends skill installation:
 
 ```powershell
 python scripts/install_skills.py --repo <repo-root> --catalog skills/catalog.md --skills <skill-name>
+```
+
+Use this to inspect the guided new-track checkpoints before materializing the track:
+
+```powershell
+python scripts/new_track_flow.py --repo <repo-root> --title "Implement user authentication"
+```
+
+Use these to inspect guided lifecycle checkpoints before the mutating helper steps:
+
+```powershell
+python scripts/implement_flow.py --repo <repo-root>
+python scripts/review_flow.py --repo <repo-root>
+python scripts/revert_flow.py --repo <repo-root> --candidates
 ```
 
 ## Update an Existing Installation

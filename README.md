@@ -17,12 +17,17 @@ It is structured so it can be moved into its own repository without depending on
 Key helper scripts now include:
 
 - `scripts/setup_workspace.py`
+- `scripts/setup_flow.py`
 - `scripts/draft_setup_docs.py`
 - `scripts/new_track.py`
+- `scripts/new_track_flow.py`
 - `scripts/draft_new_track.py`
+- `scripts/implement_flow.py`
 - `scripts/implement_track.py`
 - `scripts/git_notes_helper.py`
+- `scripts/review_flow.py`
 - `scripts/review_track.py`
+- `scripts/revert_flow.py`
 - `scripts/revert_track.py`
 - `scripts/install_skills.py`
 - `scripts/sync_project_docs.py`
@@ -118,6 +123,26 @@ Setup analysis support:
 
 ```powershell
 python scripts/setup_workspace.py --repo <repo-root>
+```
+
+Setup checkpoint flow support:
+
+```powershell
+python scripts/setup_flow.py --repo <repo-root>
+```
+
+New-track checkpoint flow support:
+
+```powershell
+python scripts/new_track_flow.py --repo <repo-root> --title "Implement user authentication"
+```
+
+Implement/review/revert checkpoint flow support:
+
+```powershell
+python scripts/implement_flow.py --repo <repo-root>
+python scripts/review_flow.py --repo <repo-root>
+python scripts/revert_flow.py --repo <repo-root> --candidates
 ```
 
 Skills install support:
