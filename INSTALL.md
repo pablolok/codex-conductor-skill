@@ -47,6 +47,7 @@ Check that these files exist:
 - `scripts/bootstrap_conductor.py`
 - `scripts/setup_workspace.py`
 - `scripts/setup_flow.py`
+- `scripts/conversation_state.py`
 - `scripts/draft_setup_docs.py`
 - `scripts/migrate_workspace.py`
 - `scripts/new_track.py`
@@ -118,6 +119,12 @@ Use this to inspect the guided setup checkpoints that should be followed:
 
 ```powershell
 python scripts/setup_flow.py --repo <repo-root>
+```
+
+Use this to persist multi-turn revise/approve loop state:
+
+```powershell
+python scripts/conversation_state.py init --repo <repo-root> --command setup
 ```
 
 ## Materialize a Repository Context

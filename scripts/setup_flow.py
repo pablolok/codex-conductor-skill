@@ -5,6 +5,7 @@ import json
 import subprocess
 from pathlib import Path
 
+from conversation_state import session_blueprint
 from conductor_fs import detect_styleguide_names, detect_workspace_kind, infer_product_name, read_text
 from draft_setup_docs import build_guidelines, build_product, build_tech_stack, build_workflow
 from setup_workspace import audit_existing_artifacts, detect_project_maturity, determine_resume_target
@@ -268,6 +269,39 @@ def build_workflow_questions(styleguides: list[str]) -> list[dict[str, object]]:
     ]
 
 
+def build_styleguide_mode_question(recommended: list[str]) -> dict[str, object]:
+    description = ", ".join(recommended) if recommended else "no specific recommendation"
+    return {
+        "header": "Code Style Guide",
+        "question": f"How would you like to proceed with code style guides? Recommended: {description}",
+        "type": "choice",
+        "multiSelect": False,
+        "options": [
+            {"label": "Recommended", "description": "Use the recommended guides."},
+            {"label": "Select from Library", "description": "Choose guides manually from the library."},
+        ],
+    }
+
+
+def build_styleguide_library_batches(styleguides: list[str]) -> list[dict[str, object]]:
+    batches = []
+    for index in range(0, len(styleguides), 4):
+        group = styleguides[index : index + 4]
+        options = [{"label": name, "description": f"Install {name} into the workspace."} for name in group]
+        if len(options) == 1:
+            options.append({"label": "None", "description": "Do not add another guide from this batch."})
+        batches.append(
+            {
+                "header": "Code Style Guide",
+                "question": f"Which code style guides would you like to include? (Part {index // 4 + 1})",
+                "type": "choice",
+                "multiSelect": True,
+                "options": options,
+            }
+        )
+    return batches
+
+
 def build_setup_flow(repo: Path, skill_root: Path) -> dict[str, object]:
     conductor_dir = repo / "conductor"
     maturity, reasons = detect_project_maturity(repo)
@@ -346,25 +380,36 @@ def build_setup_flow(repo: Path, skill_root: Path) -> dict[str, object]:
             "file": "workflow.md",
             "questions": build_workflow_questions(styleguides),
             "recommended_styleguides": recommended_styleguides,
+            "styleguide_mode_question": build_styleguide_mode_question(recommended_styleguides),
+            "styleguide_library_batches": build_styleguide_library_batches(styleguides),
         },
         approval_question("workflow.md", drafts["workflow.md"]),
     ]
-    if recommendations:
-        checkpoints.append(
-            {
-                "kind": "skills",
-                "question": {
-                    "header": "Install Skills",
-                    "question": "I found recommended skills for this repository. Which ones should be installed now?",
-                    "type": "choice",
-                    "multiSelect": True,
-                    "options": [
-                        {"label": item["name"], "description": item["description"]} for item in recommendations
-                    ],
-                },
-                "reload_instruction": "New skills installed. Please run `/skills reload` and confirm before continuing.",
-            }
-        )
+    checkpoints.append(
+        {
+            "kind": "skills",
+            "question": {
+                "header": "Install Skills",
+                "question": "I found recommended skills for this repository. How would you like to proceed?",
+                "type": "choice",
+                "multiSelect": False,
+                "options": [
+                    {"label": "Install All", "description": "Install all recommended skills."},
+                    {"label": "Hand-pick", "description": "Select specific skills from the catalog."},
+                    {"label": "Skip", "description": "Do not install any skills right now."},
+                ],
+            },
+            "recommended_skills": recommendations,
+            "hand_pick_prompt": {
+                "header": "Select Skills",
+                "question": "Which skills would you like to install? Type the names separated by commas.",
+                "type": "text",
+                "placeholder": "e.g. firebase-auth-basics, firebase-firestore-basics",
+            },
+            "skip_reason": "No recommended skills were detected for this repository context." if not recommendations else "",
+            "reload_instruction": "New skills installed. Please run `/skills reload` and confirm before continuing.",
+        }
+    )
     checkpoints.append(
         {
             "kind": "confirm",
@@ -395,6 +440,7 @@ def build_setup_flow(repo: Path, skill_root: Path) -> dict[str, object]:
         "checkpoints": checkpoints,
         "drafts": drafts,
         "styleguides": {"available": styleguides, "recommended": recommended_styleguides},
+        "session": session_blueprint(repo, "setup"),
     }
     return flow
 

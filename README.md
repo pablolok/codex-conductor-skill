@@ -18,6 +18,7 @@ Key helper scripts now include:
 
 - `scripts/setup_workspace.py`
 - `scripts/setup_flow.py`
+- `scripts/conversation_state.py`
 - `scripts/draft_setup_docs.py`
 - `scripts/new_track.py`
 - `scripts/new_track_flow.py`
@@ -134,6 +135,12 @@ Setup checkpoint flow support:
 
 ```powershell
 python scripts/setup_flow.py --repo <repo-root>
+```
+
+Persisted conversation-state support:
+
+```powershell
+python scripts/conversation_state.py init --repo <repo-root> --command setup
 ```
 
 New-track checkpoint flow support:
