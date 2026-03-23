@@ -5,6 +5,7 @@
 - Review against `spec.md`, `plan.md`, `AGENTS.md`, and executed verification.
 - Consider whether the recorded commit history matches the workflow recorded in `conductor/workflow.md`.
 - Consider whether the verification evidence is consistent with the approved coverage target.
+- Use deterministic helpers to derive scope, diff range, and revert candidates before the agent takes mutating steps.
 - Record findings, risks, gaps, and decision in `review.md`.
 
 ## Revert

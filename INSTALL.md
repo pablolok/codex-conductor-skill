@@ -37,6 +37,7 @@ Check that these files exist:
 
 - `SKILL.md`
 - `agents/openai.yaml`
+- `skills/catalog.md`
 - `references/bootstrap.md`
 - `references/setup_protocol.md`
 - `references/brownfield_scan.md`
@@ -44,8 +45,13 @@ Check that these files exist:
 - `references/review_revert_archive.md`
 - `references/artifact_sync.md`
 - `scripts/bootstrap_conductor.py`
+- `scripts/setup_workspace.py`
 - `scripts/migrate_workspace.py`
 - `scripts/new_track.py`
+- `scripts/implement_track.py`
+- `scripts/review_track.py`
+- `scripts/revert_track.py`
+- `scripts/skills_catalog.py`
 - `scripts/status_tracks.py`
 - `scripts/archive_tracks.py`
 
@@ -105,6 +111,12 @@ python scripts/migrate_workspace.py --repo <repo-root>
 ```
 
 This converts the workspace into the canonical Gemini-compatible format.
+
+## Update an Existing Installation
+
+1. Pull or download the latest version of this repository.
+2. Copy the updated contents again into `~/.codex/skills/conductor`.
+3. Start a new Codex session so the updated skill is loaded.
 
 ## Supported Commands
 

@@ -7,22 +7,34 @@ Describe the delivery approach for the track.
 ## Phase: Specification
 
 - [~] Task: Draft and confirm the track specification
+  - [ ] Confirm assumptions, constraints, and acceptance criteria
 
 ## Phase: Design
 
 - [ ] Task: Define the implementation approach
-- [ ] Task: Confirm interfaces, constraints, and dependencies
+  - [ ] Identify interfaces and touch points
+  - [ ] Confirm dependencies and migration constraints
+- [ ] Task: Break the work into implementation slices
+  - [ ] Define the first slice
+  - [ ] Define the remaining slices
 
 ## Phase: Implementation
 
 - [ ] Task: Write failing tests for the first slice
+  - [ ] Run the targeted test command and confirm failure
 - [ ] Task: Implement the first slice to satisfy tests
+  - [ ] Run the targeted test command and confirm success
 - [ ] Task: Refactor while preserving behavior
+  - [ ] Re-run the relevant verification commands
+- [ ] Task: Conductor - User Manual Verification 'Implementation' (Protocol in workflow.md)
 
 ## Phase: Verification
 
 - [ ] Task: Run the required automated verification
+  - [ ] Record the exact command outputs needed for review
 - [ ] Task: Record manual verification guidance in `verify.md`
+  - [ ] Capture the expected outcomes for each step
+- [ ] Task: Conductor - User Manual Verification 'Verification' (Protocol in workflow.md)
 
 ## Public Interfaces
 

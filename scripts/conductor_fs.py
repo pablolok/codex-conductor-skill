@@ -5,6 +5,7 @@ import re
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 
 CANONICAL_SHARED_FILES = (
@@ -19,6 +20,8 @@ CANONICAL_SHARED_FILES = (
 
 LEGACY_TRACKS_MARKER = "compact summary view of Conductor tracks"
 REGISTRY_EMPTY_TEXT = "No active tracks currently registered."
+TASK_STATUS_PATTERN = re.compile(r"^(?P<indent>\s*)- \[(?P<marker>[ x~])\] (?P<title>.+?)(?:\s+(?P<sha>[a-f0-9]{7}))?$")
+PHASE_HEADER_PATTERN = re.compile(r"^##\s+Phase:\s+(?P<name>.+?)(?:\s+\[checkpoint:\s*(?P<checkpoint>[a-f0-9]{7})\])?$")
 
 
 def read_text(path: Path) -> str:
@@ -180,6 +183,8 @@ def require_canonical_workspace(conductor_dir: Path) -> None:
             "Legacy Codex-native conductor workspace detected. "
             "Run scripts/migrate_workspace.py --repo <repo-root> before using this command."
         )
+    if kind == "missing":
+        raise SystemExit("No conductor/ workspace found. Run conductor:setup first.")
 
 
 def normalize_metadata(data: dict, track_dir: Path | None = None) -> dict:
@@ -249,11 +254,18 @@ def scan_tracks(root: Path, relative_prefix: str) -> list[dict]:
 def parse_tracks_registry(tracks_file: Path) -> list[dict]:
     content = read_text(tracks_file)
     entries: list[dict] = []
-    pattern = re.compile(
+    bullet_pattern = re.compile(
         r"- \[(?P<marker>[ x~])\] \*\*Track: (?P<title>.+?)\*\*\s*\n\s*\*Link: \[(?P<label>[^\]]+)\]\((?P<link>[^)]+)\)\*",
         re.MULTILINE,
     )
-    for match in pattern.finditer(content):
+    legacy_pattern = re.compile(
+        r"^##\s+\[(?P<marker>[ x~])\]\s+Track:\s+(?P<title>.+?)\s*$.*?^\*Link:\s+\[(?P<label>[^\]]+)\]\((?P<link>[^)]+)\)\*",
+        re.MULTILINE | re.DOTALL,
+    )
+    matches = list(bullet_pattern.finditer(content))
+    if not matches:
+        matches = list(legacy_pattern.finditer(content))
+    for match in matches:
         link = match.group("link").strip()
         if link.startswith("./"):
             resolved = (tracks_file.parent / link[2:]).resolve()
@@ -313,6 +325,21 @@ def append_track_to_registry(conductor_dir: Path, template_base: Path, track_id:
 def remove_track_from_registry(conductor_dir: Path, template_base: Path, track_id: str) -> None:
     tracks_file = conductor_dir / "tracks.md"
     entries = [entry for entry in parse_tracks_registry(tracks_file) if entry["track_id"] != track_id]
+    write_registry(conductor_dir, template_base, entries)
+
+
+def update_registry_entry_status(conductor_dir: Path, template_base: Path, track_id: str, status: str) -> None:
+    tracks_file = conductor_dir / "tracks.md"
+    entries = parse_tracks_registry(tracks_file)
+    updated = False
+    for entry in entries:
+        if entry["track_id"] == track_id:
+            entry["status"] = status
+            entry["marker"] = status_marker_for(status)
+            updated = True
+            break
+    if not updated:
+        raise SystemExit(f"Track '{track_id}' not found in conductor/tracks.md")
     write_registry(conductor_dir, template_base, entries)
 
 
@@ -436,3 +463,169 @@ def existing_track_ids(conductor_dir: Path) -> set[str]:
                 continue
             ids.add(str(data.get("track_id") or data.get("id") or child.name))
     return ids
+
+
+def existing_track_short_names(conductor_dir: Path) -> set[str]:
+    short_names: set[str] = set()
+    for track_id in existing_track_ids(conductor_dir):
+        short_names.add(track_id.rsplit("_", 1)[0])
+    return short_names
+
+
+def write_metadata(track_dir: Path, metadata: dict) -> None:
+    write_text(track_dir / "metadata.json", json.dumps(metadata, indent=2))
+
+
+def resolve_track_dir(conductor_dir: Path, track_ref: str | None = None) -> Path:
+    entries = parse_tracks_registry(conductor_dir / "tracks.md")
+    if not entries:
+        raise SystemExit("The tracks file is empty or malformed. No tracks available.")
+    if track_ref:
+        lowered = track_ref.strip().lower()
+        exact = [entry for entry in entries if entry["track_id"].lower() == lowered or entry["title"].lower() == lowered]
+        if len(exact) == 1:
+            return exact[0]["track_dir"]
+        partial = [entry for entry in entries if lowered in entry["track_id"].lower() or lowered in entry["title"].lower()]
+        if len(partial) == 1:
+            return partial[0]["track_dir"]
+        if len(exact) > 1 or len(partial) > 1:
+            raise SystemExit(f"Track reference '{track_ref}' is ambiguous.")
+        raise SystemExit(f"Track reference '{track_ref}' not found.")
+    for entry in entries:
+        if entry["status"] != "completed":
+            return entry["track_dir"]
+    raise SystemExit("No incomplete tracks found in the tracks file.")
+
+
+def parse_plan(plan_path: Path) -> list[dict[str, Any]]:
+    phases: list[dict[str, Any]] = []
+    current_phase: dict[str, Any] | None = None
+    for line_number, line in enumerate(read_text(plan_path).splitlines(), start=1):
+        phase_match = PHASE_HEADER_PATTERN.match(line.strip())
+        if phase_match:
+            current_phase = {
+                "name": phase_match.group("name"),
+                "checkpoint": phase_match.group("checkpoint"),
+                "line_number": line_number,
+                "tasks": [],
+            }
+            phases.append(current_phase)
+            continue
+        task_match = TASK_STATUS_PATTERN.match(line)
+        if task_match and current_phase is not None:
+            current_phase["tasks"].append(
+                {
+                    "line_number": line_number,
+                    "indent": task_match.group("indent"),
+                    "marker": task_match.group("marker"),
+                    "title": task_match.group("title"),
+                    "sha": task_match.group("sha"),
+                }
+            )
+    return phases
+
+
+def find_first_incomplete_task(plan_path: Path) -> dict[str, Any] | None:
+    for phase in parse_plan(plan_path):
+        for task in phase["tasks"]:
+            if task["marker"] != "x":
+                task_with_phase = dict(task)
+                task_with_phase["phase"] = phase["name"]
+                task_with_phase["phase_line"] = phase["line_number"]
+                return task_with_phase
+    return None
+
+
+def find_in_progress_task(plan_path: Path) -> dict[str, Any] | None:
+    for phase in parse_plan(plan_path):
+        for task in phase["tasks"]:
+            if task["marker"] == "~":
+                task_with_phase = dict(task)
+                task_with_phase["phase"] = phase["name"]
+                task_with_phase["phase_line"] = phase["line_number"]
+                return task_with_phase
+    return None
+
+
+def update_task_marker(plan_path: Path, line_number: int, marker: str, sha: str | None = None) -> None:
+    lines = read_text(plan_path).splitlines()
+    if line_number < 1 or line_number > len(lines):
+        raise SystemExit(f"Invalid task line number {line_number} for {plan_path}")
+    line = lines[line_number - 1]
+    match = TASK_STATUS_PATTERN.match(line)
+    if not match:
+        raise SystemExit(f"Line {line_number} in {plan_path} is not a task line.")
+    title = match.group("title")
+    indent = match.group("indent")
+    suffix = f" {sha}" if sha else ""
+    lines[line_number - 1] = f"{indent}- [{marker}] {title}{suffix}"
+    write_text(plan_path, "\n".join(lines))
+
+
+def update_phase_checkpoint(plan_path: Path, phase_line_number: int, checkpoint_sha: str) -> None:
+    lines = read_text(plan_path).splitlines()
+    if phase_line_number < 1 or phase_line_number > len(lines):
+        raise SystemExit(f"Invalid phase line number {phase_line_number} for {plan_path}")
+    line = lines[phase_line_number - 1]
+    match = PHASE_HEADER_PATTERN.match(line.strip())
+    if not match:
+        raise SystemExit(f"Line {phase_line_number} in {plan_path} is not a phase heading.")
+    name = match.group("name")
+    lines[phase_line_number - 1] = f"## Phase: {name} [checkpoint: {checkpoint_sha}]"
+    write_text(plan_path, "\n".join(lines))
+
+
+def append_review_fix_task(plan_path: Path) -> None:
+    content = read_text(plan_path).rstrip()
+    addition = "\n\n## Phase: Review Fixes\n- [~] Task: Apply review suggestions"
+    if "## Phase: Review Fixes" in content:
+        return
+    write_text(plan_path, content + addition)
+
+
+def latest_recorded_sha(plan_path: Path) -> str | None:
+    latest = None
+    for phase in parse_plan(plan_path):
+        if phase["checkpoint"]:
+            latest = phase["checkpoint"]
+        for task in phase["tasks"]:
+            if task["sha"]:
+                latest = task["sha"]
+    return latest
+
+
+def collect_revert_candidates(conductor_dir: Path) -> list[dict[str, str]]:
+    candidates: list[dict[str, str]] = []
+    for entry in parse_tracks_registry(conductor_dir / "tracks.md"):
+        plan_path = entry["track_dir"] / "plan.md"
+        for phase in parse_plan(plan_path):
+            for task in phase["tasks"]:
+                if task["marker"] == "~":
+                    candidates.append(
+                        {
+                            "kind": "task",
+                            "track_id": entry["track_id"],
+                            "track_title": entry["title"],
+                            "description": task["title"],
+                        }
+                    )
+    if candidates:
+        return candidates[:3]
+    for entry in parse_tracks_registry(conductor_dir / "tracks.md"):
+        plan_path = entry["track_dir"] / "plan.md"
+        for phase in reversed(parse_plan(plan_path)):
+            for task in reversed(phase["tasks"]):
+                if task["marker"] == "x":
+                    candidates.append(
+                        {
+                            "kind": "task",
+                            "track_id": entry["track_id"],
+                            "track_title": entry["title"],
+                            "description": task["title"],
+                        }
+                    )
+                    if len(candidates) >= 3:
+                        return candidates[:3]
+            if len(candidates) >= 3:
+                return candidates[:3]
+    return candidates[:3]

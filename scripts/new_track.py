@@ -8,12 +8,14 @@ from conductor_fs import (
     append_track_to_registry,
     canonical_track_id,
     existing_track_ids,
+    existing_track_short_names,
     infer_track_type,
     load_template,
     now_utc,
     refresh_portfolio_indexes,
     refresh_track_index,
     require_canonical_workspace,
+    slugify_short_name,
     write_text,
 )
 
@@ -64,6 +66,12 @@ def main() -> None:
             raise SystemExit(f"Missing required conductor file: {required}")
 
     now = now_utc()
+    short_name = slugify_short_name(args.title)
+    if short_name in existing_track_short_names(conductor_dir):
+        raise SystemExit(
+            f"A track with short name '{short_name}' already exists. "
+            "Choose a different title or resume the existing track."
+        )
     track_id = canonical_track_id(args.title, existing_track_ids(conductor_dir), created_at=now)
     target_dir = tracks_dir / track_id
     target_dir.mkdir(parents=True, exist_ok=False)

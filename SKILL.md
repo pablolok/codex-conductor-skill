@@ -22,6 +22,13 @@ Use this skill only for explicit Conductor workflow requests.
 - When a repository already has `conductor/`, inspect it before writing anything and preserve official artifacts instead of reshaping them into a local-only format.
 - Refuse full lifecycle operations on a legacy Codex-native workspace until it has been migrated to the canonical Gemini-compatible format.
 
+## Interaction Bridge
+
+- Gemini `ask_user` checkpoints map to `request_user_input` when Codex is already in Plan Mode.
+- In Default mode, the same checkpoints map to concise inline questions and the command resumes after the user answers.
+- Gemini `enter_plan_mode` and `exit_plan_mode` should be interpreted as workflow phases and confirmation boundaries, not as literal tool requirements.
+- Gemini `/skills reload` pauses should be preserved as a Codex instruction-and-wait step before continuing.
+
 ## Commands
 
 ### `conductor:setup`
@@ -66,13 +73,20 @@ Run `scripts/archive_tracks.py --repo <repo-root>` and ensure archived tracks ar
 
 ### `conductor:implement`, `conductor:review`, `conductor:revert`
 
-These remain agent-driven workflow commands.
+These remain agent-driven workflow commands backed by deterministic helper scripts.
 
+- For `implement`, use `scripts/implement_track.py --repo <repo-root>` to support track selection, registry transitions, task start/completion markers, and track completion transitions.
 - For `implement`, select tracks from `conductor/tracks.md`, resolve track files through the track index, and treat the repository's existing `conductor/workflow.md` as the source of truth for task lifecycle.
 - For `implement`, preserve task markers, task SHA recording, and phase checkpoint annotations when present in `plan.md`.
 - For `implement`, treat workflow verification and checkpoint behavior as authoritative for the track unless the user explicitly changes it.
-- For `review`, update `review.md` with findings, risks, gaps, and decision.
-- For `revert`, scope the rollback to track, phase, or task/sub-task, reconcile plan history against git commits, and realign registry and track files after the revert.
+- For `review`, use `scripts/review_track.py --repo <repo-root>` to derive scope, revision range, and review scaffolding, then update `review.md` with findings, risks, gaps, and decision.
+- For `revert`, use `scripts/revert_track.py --repo <repo-root>` to enumerate candidates, reconcile plan history against git commits, and draft the revert order before executing the rollback.
+
+### Skills Catalog
+
+- Use `skills/catalog.md` as the local mirror of the upstream Conductor skills catalog.
+- Use `scripts/skills_catalog.py` to load and score recommendations from repository context, `conductor/tech-stack.md`, `spec.md`, and `plan.md`.
+- Preserve the upstream choice points: install all, hand-pick, or skip.
 
 Read `references/track_lifecycle.md`, `references/review_revert_archive.md`, and `references/artifact_sync.md` when handling these commands.
 

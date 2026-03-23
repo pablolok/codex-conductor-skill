@@ -24,3 +24,4 @@ Lifecycle expectations:
 9. Verification should be planned against the approved repository coverage target and the repository's workflow rules.
 10. `conductor:review` records findings and a decision in `review.md`.
 11. `conductor:archive` moves only completed tracks into `conductor/archive/` and removes or updates the active registry entry.
+12. `conductor:implement` should preserve task SHA recording and phase checkpoint annotations when they exist or when the workflow requires them.

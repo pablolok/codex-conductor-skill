@@ -82,6 +82,35 @@ Track plans should stay compatible with upstream Conductor expectations:
 - task lines may append short commit SHAs when completed
 - phase headings may append checkpoint annotations such as `[checkpoint: abc1234]`
 
+## Task Workflow
+
+All tasks follow a strict lifecycle:
+
+1. Select the next available task from `plan.md` in sequence.
+2. Mark the task `[~]` before beginning work.
+3. Write failing tests for the task when the workflow requires TDD.
+4. Implement the minimum code required to make the tests pass.
+5. Refactor while preserving behavior.
+6. Verify coverage against the approved repository target.
+7. Commit the code changes for the task.
+8. Attach a task summary using `git notes` when supported by the repository workflow.
+9. Mark the task `[x]` in `plan.md` and append the short commit SHA.
+10. Commit the `plan.md` update.
+
+## Phase Completion Verification and Checkpointing Protocol
+
+When a task completes a phase:
+
+1. Determine the files changed in the phase from the previous checkpoint or the start of the track.
+2. Ensure tests exist for code changed in the phase.
+3. Run the automated verification command recorded for the track.
+4. Record a detailed manual verification plan in `verify.md`.
+5. Pause for user confirmation that the manual verification plan is acceptable.
+6. Create a checkpoint commit for the phase.
+7. Attach the verification report to the checkpoint commit using `git notes` when supported.
+8. Append the checkpoint SHA to the phase heading in `plan.md`.
+9. Commit the `plan.md` checkpoint update.
+
 ## Source of Truth
 
 - `conductor/index.md` is the primary workspace index.

@@ -10,8 +10,20 @@ It is structured so it can be moved into its own repository without depending on
 - `agents/openai.yaml`
 - `references/`
 - `scripts/`
+- `skills/catalog.md`
 - `assets/repo_templates/`
 - `assets/styleguides/`
+
+Key helper scripts now include:
+
+- `scripts/setup_workspace.py`
+- `scripts/new_track.py`
+- `scripts/implement_track.py`
+- `scripts/review_track.py`
+- `scripts/revert_track.py`
+- `scripts/status_tracks.py`
+- `scripts/archive_tracks.py`
+- `scripts/migrate_workspace.py`
 
 ## Install
 
@@ -108,6 +120,7 @@ If you want to publish this as a separate repository:
 
 - The skill is self-contained.
 - Template and styleguide libraries stay inside the skill.
+- `skills/catalog.md` mirrors the upstream Conductor skills-catalog contract for recommendation parity.
 - The target repository should receive only live `conductor/` artifacts, not repo-local template scaffolds.
 - The target repository still provides its own `AGENTS.md` and project-specific context.
 - The bootstrap script is not the full meaning of `conductor:setup`; it only materializes the agreed context.

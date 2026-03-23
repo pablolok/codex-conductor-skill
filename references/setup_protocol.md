@@ -29,4 +29,9 @@ Follow this order:
 12. Only after confirmation, materialize or repair the canonical `conductor/` workspace.
 13. When the workspace is ready, hand off into the initial track flow if the session requires it.
 
+Interaction bridge:
+
+- In Plan Mode, preserve Gemini-style checkpoint questions with `request_user_input`.
+- In Default mode, ask the same checkpoints inline and resume the flow after the user answers.
+
 Scripts support setup, but they do not define setup.
