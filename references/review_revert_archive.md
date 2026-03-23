@@ -17,6 +17,7 @@
 - Reconcile git history with the logical work described in the track files and the canonical registry in `conductor/tracks.md`.
 - Preserve task SHA and phase checkpoint annotations when they already exist in `plan.md`.
 - Use `scripts/revert_flow.py` to materialize the rollback candidates and repair checklist before mutating git history.
+- Use the guided `selection_menu`, `target_confirmation`, and `plan_confirmation` payloads from `scripts/revert_flow.py` before executing any revert.
 - Ensure the drafted rollback includes associated plan-update commits, and include the original track-registry creation commit when reverting an entire track.
 - Realign `plan.md`, `review.md`, `verify.md`, `metadata.json`, and indexes after the revert.
 - Use `scripts/repair_track_state.py` after the rollback when the track status must be reset.

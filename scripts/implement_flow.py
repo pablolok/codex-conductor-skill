@@ -4,16 +4,26 @@ import argparse
 import json
 from pathlib import Path
 
+from cleanup_flow import build_cleanup_flow
 from conductor_fs import (
     find_first_incomplete_task,
     find_in_progress_task,
     load_metadata,
     parse_plan,
+    parse_tracks_registry,
     read_text,
     require_canonical_workspace,
     resolve_track_dir,
 )
 from skills_catalog import installed_skill_names, partition_recommended_skills, recommend_skills
+
+
+def first_incomplete_track(conductor_dir: Path) -> Path:
+    for entry in parse_tracks_registry(conductor_dir / "tracks.md"):
+        plan_path = entry["track_dir"] / "plan.md"
+        if find_in_progress_task(plan_path) or find_first_incomplete_task(plan_path):
+            return entry["track_dir"]
+    raise SystemExit("No incomplete track found to implement.")
 
 
 def build_task_summary(track_dir: Path) -> dict[str, object]:
@@ -71,6 +81,26 @@ def build_task_summary(track_dir: Path) -> dict[str, object]:
     }
 
 
+def build_implement_flow(repo: Path, track_ref: str | None) -> dict[str, object]:
+    conductor_dir = repo / "conductor"
+    track_dir = resolve_track_dir(conductor_dir, track_ref) if track_ref else first_incomplete_track(conductor_dir)
+    summary = build_task_summary(track_dir)
+    summary["cleanup_options"] = build_cleanup_flow(repo, summary["track"]["track_id"])["options"]
+    if track_ref:
+        summary["track_confirmation"] = {
+            "header": "Confirm Track",
+            "question": f"I will continue implementation on '{summary['track']['title']}'. Is this correct?",
+            "type": "yesno",
+        }
+    else:
+        summary["track_prompt"] = {
+            "header": "Next Track",
+            "question": f"The next incomplete track is '{summary['track']['title']}'. Continue with this track?",
+            "type": "yesno",
+        }
+    return summary
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True)
@@ -80,8 +110,7 @@ def main() -> None:
     repo = Path(args.repo).resolve()
     conductor_dir = repo / "conductor"
     require_canonical_workspace(conductor_dir)
-    track_dir = resolve_track_dir(conductor_dir, args.track)
-    print(json.dumps(build_task_summary(track_dir), indent=2))
+    print(json.dumps(build_implement_flow(repo, args.track), indent=2))
 
 
 if __name__ == "__main__":

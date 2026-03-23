@@ -87,6 +87,7 @@ Run `scripts/archive_tracks.py --repo <repo-root>` and ensure archived tracks ar
 These remain agent-driven workflow commands backed by deterministic helper scripts.
 
 - For `implement`, use `scripts/implement_flow.py --repo <repo-root>` first to materialize the active track, task context, workflow checkpoints, and phase status before mutating the plan.
+- For `implement`, use the `track_prompt`, `track_confirmation`, and `cleanup_options` payloads from `scripts/implement_flow.py` to preserve Gemini-style track selection and post-completion cleanup branching.
 - For `implement`, use `scripts/implement_track.py --repo <repo-root>` to support track selection, registry transitions, task start/completion markers, and track completion transitions.
 - For `implement`, use `scripts/commit_task.py --repo <repo-root>` when the workflow requires the explicit Gemini-style code-commit then plan-commit sequence for a task.
 - For `implement`, select tracks from `conductor/tracks.md`, resolve track files through the track index, and treat the repository's existing `conductor/workflow.md` as the source of truth for task lifecycle.
@@ -98,6 +99,7 @@ These remain agent-driven workflow commands backed by deterministic helper scrip
 - For `review`, use the `diff_strategy`, `large_review_confirmation`, `test_command`, and `decision_question` payloads from `scripts/review_flow.py` to preserve the Gemini-style review branches.
 - For `review`, use `scripts/commit_review_fixes.py --repo <repo-root>` when review fixes were applied and the workflow requires the review-fix task plus plan-update commit sequence.
 - For `revert`, use `scripts/revert_flow.py --repo <repo-root>` first to materialize candidates, target scope, and rollback checkpoints, then use `scripts/revert_track.py --repo <repo-root>` to enumerate implementation commits, associated plan-update commits, and whole-track registry-creation commits before executing the rollback.
+- For `revert`, use the `selection_menu`, `target_confirmation`, and `plan_confirmation` payloads from `scripts/revert_flow.py` to preserve the Gemini-style guided selection and final go/no-go confirmation.
 - For `revert`, use `scripts/execute_revert.py --repo <repo-root>` to execute the drafted revert order and optionally repair logical track state after successful rollback.
 - After `review` or `revert`, use `scripts/repair_track_state.py --repo <repo-root> --track <track-id> --status <new|in_progress|completed>` to realign `metadata.json`, `tracks.md`, and indexes when the logical track state changed.
 - For cleanup after `implement` or `review`, use `scripts/cleanup_track.py --repo <repo-root> --track <track-id> --action <archive|delete|skip>`.
