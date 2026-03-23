@@ -102,6 +102,7 @@ These remain agent-driven workflow commands backed by deterministic helper scrip
 - For `review`, use `scripts/commit_review_fixes.py --repo <repo-root>` when review fixes were applied and the workflow requires the review-fix task plus plan-update commit sequence.
 - For `revert`, use `scripts/revert_flow.py --repo <repo-root>` first to materialize candidates, target scope, and rollback checkpoints, then use `scripts/revert_track.py --repo <repo-root>` to enumerate implementation commits, associated plan-update commits, and whole-track registry-creation commits before executing the rollback.
 - For `revert`, use the `selection_menu`, `target_confirmation`, and `plan_confirmation` payloads from `scripts/revert_flow.py` to preserve the Gemini-style guided selection and final go/no-go confirmation.
+- For `revert`, use `scripts/revert_runtime.py --repo <repo-root> --action <start|prepare|execute>` to drive the guided selection, plan confirmation, execution, and repair handoff as one runtime sequence.
 - For `revert`, use `scripts/execute_revert.py --repo <repo-root>` to execute the drafted revert order and optionally repair logical track state after successful rollback.
 - After `review` or `revert`, use `scripts/repair_track_state.py --repo <repo-root> --track <track-id> --status <new|in_progress|completed>` to realign `metadata.json`, `tracks.md`, and indexes when the logical track state changed.
 - For cleanup after `implement` or `review`, use `scripts/cleanup_track.py --repo <repo-root> --track <track-id> --action <archive|delete|skip>`.
