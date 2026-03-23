@@ -23,6 +23,7 @@ from conductor_fs import (
     write_metadata,
 )
 from implement_flow import build_implement_flow
+from review_flow import build_review_flow
 from sync_project_docs import apply_sync_payload, build_sync_payload
 from workflow_policy import parse_workflow_policy
 
@@ -373,8 +374,13 @@ def advance_implement_runtime(
     if action == "cleanup_execute":
         if not track_ref:
             raise SystemExit("cleanup_execute requires a track.")
-        if cleanup_action not in {"archive", "delete", "skip"}:
-            raise SystemExit("cleanup_execute requires --cleanup-action archive|delete|skip.")
+        if cleanup_action not in {"review", "archive", "delete", "skip"}:
+            raise SystemExit("cleanup_execute requires --cleanup-action review|archive|delete|skip.")
+        if cleanup_action == "review":
+            return {
+                "stage": "review",
+                "flow": build_review_flow(repo, track_ref, run_tests=True),
+            }
         if cleanup_action == "delete" and not confirmed:
             return {
                 "stage": "confirm_delete",
@@ -408,7 +414,7 @@ def main() -> None:
     parser.add_argument("--verify-message")
     parser.add_argument("--paths", nargs="*")
     parser.add_argument("--approved-paths", nargs="*")
-    parser.add_argument("--cleanup-action", choices=["archive", "delete", "skip"])
+    parser.add_argument("--cleanup-action", choices=["review", "archive", "delete", "skip"])
     parser.add_argument("--confirmed", action="store_true")
     args = parser.parse_args()
 

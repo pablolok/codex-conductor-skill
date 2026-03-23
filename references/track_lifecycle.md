@@ -33,3 +33,4 @@ Lifecycle expectations:
 18. `scripts/draft_new_track.py` may be used to generate first-pass `spec.md` and `plan.md` content before the interactive confirmation loop.
 19. Workflow-dependent runtime branches should be derived from the parsed contents of `conductor/workflow.md`, not from scattered one-off string checks.
 20. Parsed workflow command blocks such as daily-development and before-commit commands should be surfaced to the active implement flow when they exist.
+21. The post-implement cleanup runtime branch should support all upstream cleanup choices, including a direct handoff into review.

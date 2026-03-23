@@ -208,6 +208,9 @@ python scripts/implement_runtime.py --repo <repo-root> --track <track-id> --acti
 python scripts/implement_runtime.py --repo <repo-root> --track <track-id> --action commit_task --code-message "feat: ..." --plan-message "conductor(plan): Mark task complete" --verify-message "test(conductor): Record phase verification" --paths <file>...
 python scripts/implement_runtime.py --repo <repo-root> --track <track-id> --action checkpoint_phase --sha <short-sha>
 python scripts/implement_runtime.py --repo <repo-root> --track <track-id> --action doc_sync_execute --approved-paths <approved-doc>...
+python scripts/implement_runtime.py --repo <repo-root> --track <track-id> --action cleanup_execute --cleanup-action review
+python scripts/implement_runtime.py --repo <repo-root> --track <track-id> --action cleanup_execute --cleanup-action archive
+python scripts/implement_runtime.py --repo <repo-root> --track <track-id> --action cleanup_execute --cleanup-action delete --confirmed
 python scripts/commit_task.py --repo <repo-root> --code-message "feat: ..." --plan-message "conductor(plan): Mark task complete"
 python scripts/review_flow.py --repo <repo-root> --run-tests
 python scripts/review_runtime.py --repo <repo-root> --track <track-id> --action start

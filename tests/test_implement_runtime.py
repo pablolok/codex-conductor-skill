@@ -258,6 +258,21 @@ class ImplementRuntimeTests(unittest.TestCase):
             self.assertEqual(state["stage"], "confirm_delete")
             self.assertEqual(state["confirmation"]["type"], "yesno")
 
+    def test_cleanup_execute_review_returns_review_handoff(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            write_track(repo)
+
+            state = advance_implement_runtime(
+                repo,
+                "sample_20260323",
+                "cleanup_execute",
+                cleanup_action="review",
+            )
+
+            self.assertEqual(state["stage"], "review")
+            self.assertIn("flow", state)
+
 
 if __name__ == "__main__":
     unittest.main()
