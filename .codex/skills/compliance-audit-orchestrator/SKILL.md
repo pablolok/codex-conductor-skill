@@ -1,6 +1,6 @@
 ---
 name: compliance-audit-orchestrator
-description: A Codex bridge for the canonical Gemini compliance audit orchestrator skill.
+description: Use when finalizing an implementation phase in a Conductor track to determine and invoke the correct specialized compliance audit (C# or Scripts) based on the files modified.
 ---
 
 # Compliance Audit Orchestrator Bridge

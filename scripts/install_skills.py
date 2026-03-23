@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import stat
@@ -37,13 +38,22 @@ def codex_skills_root(workspace_root: Path) -> Path:
     return workspace_root / ".codex" / "skills"
 
 
-def codex_bridge_content(skill_name: str) -> str:
+def parse_skill_description(skill_path: Path) -> str | None:
+    content = skill_path.read_text(encoding="utf-8")
+    match = re.search(r"^description:\s*(.+)$", content, re.MULTILINE)
+    if not match:
+        return None
+    return match.group(1).strip()
+
+
+def codex_bridge_content(skill_name: str, description: str | None = None) -> str:
     title = skill_name.replace("-", " ").title()
+    bridge_description = description or f"Use the installed Gemini {skill_name} skill as the source of truth."
     return "\n".join(
         [
             "---",
             f"name: {skill_name}",
-            f"description: A Codex bridge for the canonical Gemini {skill_name} skill.",
+            f"description: {bridge_description}",
             "---",
             "",
             f"# {title} Bridge",
@@ -69,11 +79,11 @@ def codex_bridge_content(skill_name: str) -> str:
     )
 
 
-def write_codex_bridge(workspace_root: Path, skill_name: str) -> Path:
+def write_codex_bridge(workspace_root: Path, skill_name: str, description: str | None = None) -> Path:
     bridge_dir = codex_skills_root(workspace_root) / skill_name
     bridge_dir.mkdir(parents=True, exist_ok=True)
     skill_path = bridge_dir / "SKILL.md"
-    skill_path.write_text(codex_bridge_content(skill_name), encoding="utf-8")
+    skill_path.write_text(codex_bridge_content(skill_name, description), encoding="utf-8")
     return skill_path
 
 
@@ -95,7 +105,7 @@ def install_one(workspace_root: Path, catalog_item: dict) -> dict:
         raise SystemExit(f"Skill source folder not found after sparse checkout: {folder}")
     shutil.copytree(source, destination)
     force_rmtree(temp_dir)
-    bridge = write_codex_bridge(workspace_root, catalog_item["name"])
+    bridge = write_codex_bridge(workspace_root, catalog_item["name"], parse_skill_description(source / "SKILL.md"))
     return {
         "name": catalog_item["name"],
         "destination": str(destination),

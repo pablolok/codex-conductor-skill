@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from commit_review_fixes import ensure_no_staged_conductor_changes as ensure_no_review_fix_conductor_changes  # noqa: E402
 from commit_task import ensure_no_staged_conductor_changes as ensure_no_task_conductor_changes  # noqa: E402
 from execute_revert import abort_revert  # noqa: E402
-from install_skills import codex_bridge_content, write_codex_bridge  # noqa: E402
+from install_skills import codex_bridge_content, parse_skill_description, write_codex_bridge  # noqa: E402
 
 
 class ScriptSafetyTests(unittest.TestCase):
@@ -49,16 +49,27 @@ class ScriptSafetyTests(unittest.TestCase):
     def test_install_writes_codex_bridge_wrapper(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp)
-            bridge_path = write_codex_bridge(repo, "skill-manager")
+            bridge_path = write_codex_bridge(repo, "skill-manager", "Manage and install official Gemini skills from the global skills repository.")
             self.assertTrue(bridge_path.exists())
             content = bridge_path.read_text(encoding="utf-8")
             self.assertIn("Use the installed Gemini skill at `.gemini/skills/skill-manager/SKILL.md`", content)
             self.assertIn(".codex/skills/", content)
+            self.assertIn("description: Manage and install official Gemini skills from the global skills repository.", content)
 
     def test_codex_bridge_content_mentions_gemini_source_of_truth(self) -> None:
-        content = codex_bridge_content("review-optimization")
+        content = codex_bridge_content(
+            "review-optimization",
+            "Use after a phase completion but before final user verification to analyze execution history, audit skill efficiency, and suggest workflow optimizations.",
+        )
         self.assertIn("name: review-optimization", content)
+        self.assertIn("description: Use after a phase completion but before final user verification", content)
         self.assertIn(".gemini/skills/review-optimization/SKILL.md", content)
+
+    def test_parse_skill_description_reads_frontmatter_description(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            skill = Path(tmp) / "SKILL.md"
+            skill.write_text("---\nname: sample\ndescription: Real capability\n---\n", encoding="utf-8")
+            self.assertEqual(parse_skill_description(skill), "Real capability")
 
 
 if __name__ == "__main__":

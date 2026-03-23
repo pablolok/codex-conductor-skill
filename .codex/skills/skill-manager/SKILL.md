@@ -1,6 +1,6 @@
 ---
 name: skill-manager
-description: A Codex bridge for the canonical Gemini skill-manager skill.
+description: Manage and install official Gemini skills from the global skills repository.
 ---
 
 # Skill Manager Bridge

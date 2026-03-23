@@ -1,6 +1,6 @@
 ---
 name: compliance-audit-scripts
-description: A Codex bridge for the canonical Gemini scripting compliance audit skill.
+description: A specialized compliance audit for automation and scripting (PowerShell, Python, Bash). Enforces best practices for cross-platform safety, idempotency, and TDD in script files.
 ---
 
 # Compliance Audit Scripts Bridge
