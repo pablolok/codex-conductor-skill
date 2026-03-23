@@ -26,4 +26,5 @@ Lifecycle expectations:
 11. `conductor:review` records findings and a decision in `review.md`.
 12. `conductor:archive` moves only completed tracks into `conductor/archive/` and removes or updates the active registry entry.
 13. `conductor:implement` should preserve task SHA recording and phase checkpoint annotations when they exist or when the workflow requires them.
+14. When a workflow requires phase checkpointing, `scripts/implement_runtime.py --action checkpoint_phase` should gate the transition into the next phase or doc-sync handoff.
 14. `scripts/draft_new_track.py` may be used to generate first-pass `spec.md` and `plan.md` content before the interactive confirmation loop.

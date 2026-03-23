@@ -187,6 +187,7 @@ Implement/review/revert checkpoint flow support:
 python scripts/implement_flow.py --repo <repo-root>
 python scripts/implement_runtime.py --repo <repo-root> --track <track-id> --action start
 python scripts/implement_runtime.py --repo <repo-root> --track <track-id> --action complete_task --sha <short-sha>
+python scripts/implement_runtime.py --repo <repo-root> --track <track-id> --action checkpoint_phase --sha <short-sha>
 python scripts/commit_task.py --repo <repo-root> --code-message "feat: ..." --plan-message "conductor(plan): Mark task complete"
 python scripts/review_flow.py --repo <repo-root> --run-tests
 python scripts/review_runtime.py --repo <repo-root> --track <track-id> --action start

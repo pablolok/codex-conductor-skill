@@ -78,6 +78,46 @@ class ImplementRuntimeTests(unittest.TestCase):
             self.assertIn("approval_questions", state["doc_sync"])
             self.assertIn("cleanup_options", state)
 
+    def test_complete_task_on_phase_boundary_transitions_to_phase_checkpoint(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            track_dir = write_track(repo)
+            (repo / "conductor" / "workflow.md").write_text(
+                "# Workflow\n\nPhase Completion Verification and Checkpointing Protocol\n",
+                encoding="utf-8",
+            )
+            (track_dir / "plan.md").write_text(
+                "## Phase: Phase 1\n- [ ] Task: First task\n\n## Phase: Phase 2\n- [ ] Task: Second task\n",
+                encoding="utf-8",
+            )
+            advance_implement_runtime(repo, "sample_20260323", "start")
+
+            state = advance_implement_runtime(repo, "sample_20260323", "complete_task", sha="abc1234")
+
+            self.assertEqual(state["stage"], "phase_checkpoint")
+            self.assertEqual(state["phase"]["name"], "Phase 1")
+            self.assertEqual(state["next_task"]["title"], "Task: Second task")
+
+    def test_checkpoint_phase_activates_next_phase_task(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            track_dir = write_track(repo)
+            (repo / "conductor" / "workflow.md").write_text(
+                "# Workflow\n\nPhase Completion Verification and Checkpointing Protocol\ngit notes\n",
+                encoding="utf-8",
+            )
+            (track_dir / "plan.md").write_text(
+                "## Phase: Phase 1\n- [ ] Task: First task\n\n## Phase: Phase 2\n- [ ] Task: Second task\n",
+                encoding="utf-8",
+            )
+            advance_implement_runtime(repo, "sample_20260323", "start")
+            advance_implement_runtime(repo, "sample_20260323", "complete_task", sha="abc1234")
+
+            state = advance_implement_runtime(repo, "sample_20260323", "checkpoint_phase", sha="def5678")
+
+            self.assertEqual(state["stage"], "task_execution")
+            self.assertEqual(state["current_task"]["title"], "Task: Second task")
+
 
 if __name__ == "__main__":
     unittest.main()
