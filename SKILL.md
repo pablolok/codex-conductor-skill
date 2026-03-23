@@ -95,6 +95,7 @@ These remain agent-driven workflow commands backed by deterministic helper scrip
 - For `implement`, treat workflow verification and checkpoint behavior as authoritative for the track unless the user explicitly changes it.
 - For `implement`, use `scripts/git_notes_helper.py --repo <repo-root> --sha <commit> --task "<task>" --summary "<summary>"` when the workflow calls for task or checkpoint notes.
 - For `implement`, use `scripts/sync_project_docs.py --repo <repo-root> --track <track-id>` when the completed track requires project-document synchronization.
+- For `implement`, use the `approval_questions` payload from `scripts/sync_project_docs.py` to present the proposed document diffs and require explicit approval before applying them.
 - For `review`, use `scripts/review_flow.py --repo <repo-root> --run-tests` first to materialize scope, diff range, executable test results, and review checkpoints, then use `scripts/review_track.py --repo <repo-root>` to prepare scaffolding and update `review.md` with findings, risks, gaps, and decision.
 - For `review`, use the `diff_strategy`, `large_review_confirmation`, `test_command`, and `decision_question` payloads from `scripts/review_flow.py` to preserve the Gemini-style review branches.
 - For `review`, use `scripts/commit_review_fixes.py --repo <repo-root>` when review fixes were applied and the workflow requires the review-fix task plus plan-update commit sequence.
