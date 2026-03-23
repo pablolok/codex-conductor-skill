@@ -57,6 +57,7 @@ Check that these files exist:
 - `scripts/draft_new_track.py`
 - `scripts/apply_new_track_drafts.py`
 - `scripts/implement_flow.py`
+- `scripts/implement_runtime.py`
 - `scripts/implement_track.py`
 - `scripts/commit_task.py`
 - `scripts/git_notes_helper.py`
@@ -198,6 +199,8 @@ Use these to inspect guided lifecycle checkpoints before the mutating helper ste
 
 ```powershell
 python scripts/implement_flow.py --repo <repo-root>
+python scripts/implement_runtime.py --repo <repo-root> --track <track-id> --action start
+python scripts/implement_runtime.py --repo <repo-root> --track <track-id> --action complete_task --sha <short-sha>
 python scripts/commit_task.py --repo <repo-root> --code-message "feat: ..." --plan-message "conductor(plan): Mark task complete"
 python scripts/review_flow.py --repo <repo-root> --run-tests
 python scripts/commit_review_fixes.py --repo <repo-root> --message "fix(conductor): Apply review suggestions"
