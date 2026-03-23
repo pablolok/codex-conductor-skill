@@ -176,6 +176,38 @@ class ImplementRuntimeTests(unittest.TestCase):
             self.assertEqual(state["stage"], "phase_checkpoint")
             self.assertEqual(state["phase"]["name"], "Phase 1")
 
+    def test_commit_task_action_with_verify_message_records_checkpoint_and_moves_to_next_task(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            track_dir = write_track(repo)
+            (repo / "conductor" / "workflow.md").write_text(
+                "# Workflow\n\nPhase Completion Verification and Checkpointing Protocol\ngit notes\n",
+                encoding="utf-8",
+            )
+            (track_dir / "plan.md").write_text(
+                "## Phase: Phase 1\n- [ ] Task: First task\n\n## Phase: Phase 2\n- [ ] Task: Second task\n",
+                encoding="utf-8",
+            )
+            init_git_repo(repo)
+            advance_implement_runtime(repo, "sample_20260323", "start")
+            (repo / "app.py").write_text("print('hello')\n", encoding="utf-8")
+            (track_dir / "verify.md").write_text("# Verify\n\nPassed manual verification.\n", encoding="utf-8")
+
+            state = advance_implement_runtime(
+                repo,
+                "sample_20260323",
+                "commit_task",
+                code_message="feat: first task",
+                plan_message="conductor(plan): Mark task complete",
+                paths=["app.py"],
+                note_summary="Finished phase 1.",
+                verify_message="test(conductor): Record phase verification",
+            )
+
+            self.assertEqual(state["stage"], "task_execution")
+            self.assertEqual(state["current_task"]["title"], "Task: Second task")
+            self.assertIsNotNone(state["commit_result"]["phase_checkpoint"])
+
 
 if __name__ == "__main__":
     unittest.main()

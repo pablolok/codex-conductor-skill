@@ -82,6 +82,22 @@ def find_pending_checkpoint_phase(track_dir: Path) -> str | None:
     return None
 
 
+def active_task(track_dir: Path) -> dict:
+    task = find_in_progress_task(track_dir / "plan.md")
+    if task is None:
+        raise SystemExit("No in-progress task found.")
+    return task
+
+
+def phase_will_complete_after_current(track_dir: Path, phase_name: str) -> bool:
+    for phase in parse_plan(track_dir / "plan.md"):
+        if phase["name"] != phase_name:
+            continue
+        remaining = [task for task in phase["tasks"] if task["marker"] != "x"]
+        return len(remaining) == 1 and remaining[0]["marker"] == "~"
+    raise SystemExit(f"Phase '{phase_name}' not found in plan.")
+
+
 def start_task(track_dir: Path) -> dict:
     plan_path = track_dir / "plan.md"
     task = find_in_progress_task(plan_path)
@@ -277,13 +293,21 @@ def advance_implement_runtime(
             raise SystemExit("commit_task requires a track.")
         if not code_message or not plan_message:
             raise SystemExit("commit_task requires code_message and plan_message.")
+        current = active_task(track_dir)
+        auto_phase_checkpoint = None
+        if (
+            verify_message
+            and workflow_requires_phase_checkpoint(track_dir)
+            and phase_will_complete_after_current(track_dir, current["phase"])
+        ):
+            auto_phase_checkpoint = current["phase"]
         result = run_commit_task(
             repo,
             track_ref,
             code_message,
             plan_message,
             note_summary,
-            None,
+            auto_phase_checkpoint,
             verify_message,
             paths,
         )
