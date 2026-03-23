@@ -28,6 +28,7 @@ Key helper scripts now include:
 - `scripts/apply_new_track_drafts.py`
 - `scripts/implement_flow.py`
 - `scripts/implement_runtime.py`
+- `scripts/workflow_policy.py`
 - `scripts/implement_track.py`
 - `scripts/commit_task.py`
 - `scripts/git_notes_helper.py`

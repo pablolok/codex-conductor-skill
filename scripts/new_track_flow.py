@@ -15,6 +15,7 @@ from conductor_fs import (
 )
 from draft_new_track import render_with
 from skills_catalog import installed_skill_names, partition_recommended_skills, recommend_skills
+from workflow_policy import parse_workflow_policy
 
 
 def approval_question(header: str, body: str, approve: str, revise: str) -> dict[str, object]:
@@ -120,7 +121,7 @@ def spec_questions(track_type: str, title: str) -> list[list[dict[str, object]]]
 
 
 def workflow_requires_checkpoint(workflow_text: str) -> bool:
-    return "Phase Completion Verification and Checkpointing Protocol" in workflow_text
+    return bool(parse_workflow_policy(workflow_text)["requires_phase_checkpoints"])
 
 
 def build_new_track_flow(repo: Path, title: str) -> dict[str, object]:

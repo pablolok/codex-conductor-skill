@@ -24,6 +24,7 @@ from conductor_fs import (
 )
 from implement_flow import build_implement_flow
 from sync_project_docs import apply_sync_payload, build_sync_payload
+from workflow_policy import parse_workflow_policy
 
 
 def template_base() -> Path:
@@ -52,12 +53,12 @@ def current_or_next_task(track_dir: Path) -> dict | None:
 
 def workflow_requires_phase_checkpoint(track_dir: Path) -> bool:
     workflow_text = read_text(track_dir.parents[1] / "workflow.md")
-    return "Phase Completion Verification and Checkpointing Protocol" in workflow_text
+    return bool(parse_workflow_policy(workflow_text)["requires_phase_checkpoints"])
 
 
 def workflow_requires_git_notes(track_dir: Path) -> bool:
     workflow_text = read_text(track_dir.parents[1] / "workflow.md")
-    return "git notes" in workflow_text.lower()
+    return bool(parse_workflow_policy(workflow_text)["requires_git_notes"])
 
 
 def phase_has_remaining_tasks(track_dir: Path, phase_name: str) -> bool:

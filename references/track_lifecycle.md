@@ -31,3 +31,4 @@ Lifecycle expectations:
 16. When verification evidence should be committed as part of a phase boundary, `scripts/implement_runtime.py --action commit_task --verify-message ...` should record that verification commit and use its SHA as the phase checkpoint.
 17. `scripts/implement_runtime.py --action doc_sync_execute --approved-paths ...` should apply only the approved project-document sync changes before cleanup begins.
 18. `scripts/draft_new_track.py` may be used to generate first-pass `spec.md` and `plan.md` content before the interactive confirmation loop.
+19. Workflow-dependent runtime branches should be derived from the parsed contents of `conductor/workflow.md`, not from scattered one-off string checks.

@@ -16,6 +16,7 @@ from conductor_fs import (
     resolve_track_dir,
 )
 from skills_catalog import installed_skill_names, partition_recommended_skills, recommend_skills
+from workflow_policy import parse_workflow_policy
 
 
 def first_incomplete_track(conductor_dir: Path) -> Path:
@@ -34,6 +35,7 @@ def build_task_summary(track_dir: Path) -> dict[str, object]:
     next_task = current or find_first_incomplete_task(plan_path)
     phases = parse_plan(plan_path)
     workflow_text = read_text(track_dir.parents[1] / "workflow.md")
+    workflow_policy = parse_workflow_policy(workflow_text)
     context = "\n".join(
         [
             read_text(track_dir.parents[1] / "tech-stack.md"),
@@ -53,9 +55,10 @@ def build_task_summary(track_dir: Path) -> dict[str, object]:
         "current_task": current,
         "next_task": next_task,
         "workflow": {
-            "requires_git_notes": "git notes" in workflow_text.lower(),
-            "requires_phase_checkpoints": "Phase Completion Verification and Checkpointing Protocol" in workflow_text,
-            "coverage_target": next((line.split(":", 1)[1].strip() for line in workflow_text.splitlines() if "Coverage target:" in line), "unspecified"),
+            "requires_git_notes": workflow_policy["requires_git_notes"],
+            "requires_phase_checkpoints": workflow_policy["requires_phase_checkpoints"],
+            "requires_verification_commit": workflow_policy["requires_verification_commit"],
+            "coverage_target": workflow_policy["coverage_target"],
         },
         "skills": {
             "installed_recommendations": skill_partition["installed"],
