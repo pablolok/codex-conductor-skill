@@ -9,6 +9,7 @@
 - Use `scripts/review_flow.py` to materialize the review checkpoint sequence before mutating `review.md`.
 - Record findings, risks, gaps, and decision in `review.md`.
 - If the review changes the logical track state, run `scripts/repair_track_state.py` before cleanup.
+- If review fixes are applied, use `scripts/commit_review_fixes.py` to enforce the review-fix code commit and plan-update commit sequence.
 
 ## Revert
 
@@ -16,8 +17,10 @@
 - Reconcile git history with the logical work described in the track files and the canonical registry in `conductor/tracks.md`.
 - Preserve task SHA and phase checkpoint annotations when they already exist in `plan.md`.
 - Use `scripts/revert_flow.py` to materialize the rollback candidates and repair checklist before mutating git history.
+- Ensure the drafted rollback includes associated plan-update commits, and include the original track-registry creation commit when reverting an entire track.
 - Realign `plan.md`, `review.md`, `verify.md`, `metadata.json`, and indexes after the revert.
 - Use `scripts/repair_track_state.py` after the rollback when the track status must be reset.
+- Use `scripts/execute_revert.py` when the revert should be executed in the drafted reverse-order commit sequence.
 
 ## Archive
 

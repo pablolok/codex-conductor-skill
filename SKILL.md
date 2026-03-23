@@ -83,13 +83,16 @@ These remain agent-driven workflow commands backed by deterministic helper scrip
 
 - For `implement`, use `scripts/implement_flow.py --repo <repo-root>` first to materialize the active track, task context, workflow checkpoints, and phase status before mutating the plan.
 - For `implement`, use `scripts/implement_track.py --repo <repo-root>` to support track selection, registry transitions, task start/completion markers, and track completion transitions.
+- For `implement`, use `scripts/commit_task.py --repo <repo-root>` when the workflow requires the explicit Gemini-style code-commit then plan-commit sequence for a task.
 - For `implement`, select tracks from `conductor/tracks.md`, resolve track files through the track index, and treat the repository's existing `conductor/workflow.md` as the source of truth for task lifecycle.
 - For `implement`, preserve task markers, task SHA recording, and phase checkpoint annotations when present in `plan.md`.
 - For `implement`, treat workflow verification and checkpoint behavior as authoritative for the track unless the user explicitly changes it.
 - For `implement`, use `scripts/git_notes_helper.py --repo <repo-root> --sha <commit> --task "<task>" --summary "<summary>"` when the workflow calls for task or checkpoint notes.
 - For `implement`, use `scripts/sync_project_docs.py --repo <repo-root> --track <track-id>` when the completed track requires project-document synchronization.
 - For `review`, use `scripts/review_flow.py --repo <repo-root>` first to materialize scope, diff range, and review checkpoints, then use `scripts/review_track.py --repo <repo-root>` to prepare scaffolding and update `review.md` with findings, risks, gaps, and decision.
-- For `revert`, use `scripts/revert_flow.py --repo <repo-root>` first to materialize candidates, target scope, and rollback checkpoints, then use `scripts/revert_track.py --repo <repo-root>` to enumerate commits and revert order before executing the rollback.
+- For `review`, use `scripts/commit_review_fixes.py --repo <repo-root>` when review fixes were applied and the workflow requires the review-fix task plus plan-update commit sequence.
+- For `revert`, use `scripts/revert_flow.py --repo <repo-root>` first to materialize candidates, target scope, and rollback checkpoints, then use `scripts/revert_track.py --repo <repo-root>` to enumerate implementation commits, associated plan-update commits, and whole-track registry-creation commits before executing the rollback.
+- For `revert`, use `scripts/execute_revert.py --repo <repo-root>` to execute the drafted revert order and optionally repair logical track state after successful rollback.
 - After `review` or `revert`, use `scripts/repair_track_state.py --repo <repo-root> --track <track-id> --status <new|in_progress|completed>` to realign `metadata.json`, `tracks.md`, and indexes when the logical track state changed.
 - For cleanup after `implement` or `review`, use `scripts/cleanup_track.py --repo <repo-root> --track <track-id> --action <archive|delete|skip>`.
 - Before cleanup after `implement` or `review`, use `scripts/cleanup_flow.py --repo <repo-root> --track <track-id>` to materialize the user choice set and guardrails.

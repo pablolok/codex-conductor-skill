@@ -24,11 +24,14 @@ Key helper scripts now include:
 - `scripts/draft_new_track.py`
 - `scripts/implement_flow.py`
 - `scripts/implement_track.py`
+- `scripts/commit_task.py`
 - `scripts/git_notes_helper.py`
 - `scripts/review_flow.py`
 - `scripts/review_track.py`
+- `scripts/commit_review_fixes.py`
 - `scripts/revert_flow.py`
 - `scripts/revert_track.py`
+- `scripts/execute_revert.py`
 - `scripts/repair_track_state.py`
 - `scripts/cleanup_flow.py`
 - `scripts/install_skills.py`
@@ -143,8 +146,11 @@ Implement/review/revert checkpoint flow support:
 
 ```powershell
 python scripts/implement_flow.py --repo <repo-root>
+python scripts/commit_task.py --repo <repo-root> --code-message "feat: ..." --plan-message "conductor(plan): Mark task complete"
 python scripts/review_flow.py --repo <repo-root>
+python scripts/commit_review_fixes.py --repo <repo-root> --message "fix(conductor): Apply review suggestions"
 python scripts/revert_flow.py --repo <repo-root> --candidates
+python scripts/execute_revert.py --repo <repo-root> --repair-state
 python scripts/cleanup_flow.py --repo <repo-root>
 python scripts/repair_track_state.py --repo <repo-root> --track <track-id> --status in_progress
 ```
