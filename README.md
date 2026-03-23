@@ -59,6 +59,19 @@ On Windows, that usually means:
 
 `C:\Users\<your-user>\.codex\skills\conductor`
 
+Install directly from this repository with PowerShell:
+
+```powershell
+git clone https://github.com/pablolok/codex-conductor-skill.git
+Copy-Item -Recurse -Force .\codex-conductor-skill C:\Users\<your-user>\.codex\skills\conductor
+```
+
+If you already cloned the repo elsewhere, copy this repository root into the same final location:
+
+```powershell
+Copy-Item -Recurse -Force . C:\Users\<your-user>\.codex\skills\conductor
+```
+
 ## Use
 
 This skill is meant for explicit workflow triggers:
@@ -70,6 +83,34 @@ This skill is meant for explicit workflow triggers:
 - `conductor:review`
 - `conductor:revert`
 - `conductor:archive`
+
+## Current Scope
+
+This repository should now be treated as a practical Gemini-first Codex port, not an endless parity project.
+
+What is considered done:
+
+- Codex can take over an existing canonical Gemini Conductor workspace without reshaping it.
+- Legacy Codex-native workspaces can be migrated into the canonical Gemini-compatible format.
+- `setup`, `newTrack`, `implement`, `status`, `review`, `revert`, and `archive` all have deterministic helper and runtime support.
+- The runtime understands the high-value workflow policy now encoded in `conductor/workflow.md`, including:
+  - coverage target
+  - task git-notes usage
+  - TDD requirements
+  - manual verification checkpoints
+  - phase checkpoints and verification commits
+  - command blocks for setup, daily development, and before-commit steps
+  - testing requirements
+  - definition-of-done signals
+
+What is intentionally not treated as an open blocker:
+
+- matching every Gemini prompt branch text-for-text
+- parsing every possible prose variation of a customized `workflow.md`
+- turning deployment workflow or emergency procedures into executable runtime behavior
+- making `status` a full orchestration engine instead of a high-signal summary
+
+Remaining differences should be understood as either Codex platform limits or deliberate scope boundaries, not unfinished core takeover support.
 
 ## About `conductor:setup`
 
@@ -238,3 +279,4 @@ If you want to publish this as a separate repository:
 - The target repository still provides its own `AGENTS.md` and project-specific context.
 - The bootstrap script is not the full meaning of `conductor:setup`; it only materializes the agreed context.
 - Existing official Conductor files are preserved whenever possible.
+- The intended stopping point for this port is practical takeover parity, not infinite formalization of every customizable workflow sentence.

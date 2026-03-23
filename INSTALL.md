@@ -18,6 +18,25 @@ On Windows:
 2. Copy the repository contents into your Codex skills directory under a folder named `conductor`.
 3. Start a new Codex session.
 
+## Install Directly From This Repo
+
+If you want to install the skill straight from this repository on Windows PowerShell:
+
+```powershell
+git clone https://github.com/pablolok/codex-conductor-skill.git
+Copy-Item -Recurse -Force .\codex-conductor-skill C:\Users\<your-user>\.codex\skills\conductor
+```
+
+If you are already inside the cloned repository:
+
+```powershell
+Copy-Item -Recurse -Force . C:\Users\<your-user>\.codex\skills\conductor
+```
+
+The final installed file that Codex resolves must be:
+
+`C:\Users\<your-user>\.codex\skills\conductor\SKILL.md`
+
 Example on Windows PowerShell:
 
 ```powershell
@@ -246,6 +265,26 @@ The skill is intended for these explicit workflow triggers:
 - `conductor:review`
 - `conductor:revert`
 - `conductor:archive`
+
+## Support Boundary
+
+This skill should be considered finished when it can safely take over real Gemini Conductor repositories in practice.
+
+Included in that support boundary:
+
+- canonical Gemini-compatible workspace takeover
+- migration from the older Codex-native workspace shape
+- deterministic runtime support for `setup`, `newTrack`, `implement`, `review`, `revert`, `status`, and `archive`
+- workflow-policy parsing for the sections that materially affect day-to-day track execution
+
+Not treated as required for release:
+
+- text-identical Gemini prompt choreography
+- executable handling for every optional/custom prose section in `workflow.md`
+- deployment and emergency-procedure automation
+- infinite parser expansion for niche workflow variants
+
+If you compare this repo with upstream Gemini Conductor, any remaining deltas in those deferred areas should be treated as intentional scope limits unless they block real repository takeover.
 
 ## Notes
 
