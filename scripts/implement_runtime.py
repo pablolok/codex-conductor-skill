@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 from pathlib import Path
 
 from cleanup_flow import build_cleanup_flow
@@ -131,7 +132,57 @@ def build_phase_checkpoint_state(repo: Path, track_dir: Path, completed_task: di
     }
 
 
-def advance_implement_runtime(repo: Path, track_ref: str | None, action: str, sha: str | None = None) -> dict[str, object]:
+def run_commit_task(
+    repo: Path,
+    track_ref: str,
+    code_message: str,
+    plan_message: str,
+    note_summary: str | None,
+    phase_checkpoint: str | None,
+    verify_message: str | None,
+    paths: list[str] | None,
+) -> dict[str, object]:
+    command = [
+        "python",
+        str(Path(__file__).resolve().parent / "commit_task.py"),
+        "--repo",
+        str(repo),
+        "--track",
+        track_ref,
+        "--code-message",
+        code_message,
+        "--plan-message",
+        plan_message,
+    ]
+    if note_summary:
+        command.extend(["--note-summary", note_summary])
+    if phase_checkpoint:
+        command.extend(["--phase-checkpoint", phase_checkpoint])
+    if verify_message:
+        command.extend(["--verify-message", verify_message])
+    if paths:
+        command.extend(["--paths", *paths])
+    result = subprocess.run(command, cwd=repo, text=True, capture_output=True, check=False)
+    if result.returncode != 0:
+        raise SystemExit(result.stderr.strip() or result.stdout.strip() or "commit_task.py failed")
+    output = result.stdout.strip()
+    json_start = output.rfind("{")
+    if json_start == -1:
+        raise SystemExit("commit_task.py did not return a JSON payload.")
+    return json.loads(output[json_start:])
+
+
+def advance_implement_runtime(
+    repo: Path,
+    track_ref: str | None,
+    action: str,
+    sha: str | None = None,
+    code_message: str | None = None,
+    plan_message: str | None = None,
+    note_summary: str | None = None,
+    verify_message: str | None = None,
+    paths: list[str] | None = None,
+) -> dict[str, object]:
     conductor_dir = repo / "conductor"
     require_canonical_workspace(conductor_dir)
     track_dir = resolve_track_dir(conductor_dir, track_ref)
@@ -221,6 +272,60 @@ def advance_implement_runtime(repo: Path, track_ref: str | None, action: str, sh
             "cleanup_options": build_cleanup_flow(repo, metadata["track_id"])["options"],
         }
 
+    if action == "commit_task":
+        if not track_ref:
+            raise SystemExit("commit_task requires a track.")
+        if not code_message or not plan_message:
+            raise SystemExit("commit_task requires code_message and plan_message.")
+        result = run_commit_task(
+            repo,
+            track_ref,
+            code_message,
+            plan_message,
+            note_summary,
+            None,
+            verify_message,
+            paths,
+        )
+        sync_indexes(conductor_dir, track_dir)
+        pending_phase = find_pending_checkpoint_phase(track_dir)
+        if workflow_requires_phase_checkpoint(track_dir) and pending_phase:
+            next_task = find_first_incomplete_task(track_dir / "plan.md")
+            return build_phase_checkpoint_state(
+                repo,
+                track_dir,
+                {"title": str(result["task"]), "phase": pending_phase},
+                next_task,
+            )
+        next_task = find_first_incomplete_task(track_dir / "plan.md")
+        if next_task is not None and find_in_progress_task(track_dir / "plan.md") is None:
+            update_task_marker(track_dir / "plan.md", next_task["line_number"], "~")
+            sync_indexes(conductor_dir, track_dir)
+            metadata = load_metadata(track_dir)
+            return {
+                "stage": "task_execution",
+                "track": {
+                    "track_id": metadata["track_id"],
+                    "title": metadata.get("title", metadata["description"]),
+                    "status": metadata["status"],
+                },
+                "current_task": find_in_progress_task(track_dir / "plan.md") or next_task,
+                "commit_result": result,
+                "flow": build_implement_flow(repo, metadata["track_id"]),
+            }
+        metadata = mark_track_status(repo, track_dir, "completed")
+        return {
+            "stage": "doc_sync",
+            "track": {
+                "track_id": metadata["track_id"],
+                "title": metadata.get("title", metadata["description"]),
+                "status": metadata["status"],
+            },
+            "commit_result": result,
+            "doc_sync": build_sync_payload(repo, metadata["track_id"]),
+            "cleanup_options": build_cleanup_flow(repo, metadata["track_id"])["options"],
+        }
+
     raise SystemExit(f"Unsupported implement runtime action '{action}'.")
 
 
@@ -228,12 +333,32 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True)
     parser.add_argument("--track")
-    parser.add_argument("--action", choices=["start", "complete_task", "checkpoint_phase"], required=True)
+    parser.add_argument("--action", choices=["start", "complete_task", "checkpoint_phase", "commit_task"], required=True)
     parser.add_argument("--sha")
+    parser.add_argument("--code-message")
+    parser.add_argument("--plan-message")
+    parser.add_argument("--note-summary")
+    parser.add_argument("--verify-message")
+    parser.add_argument("--paths", nargs="*")
     args = parser.parse_args()
 
     repo = Path(args.repo).resolve()
-    print(json.dumps(advance_implement_runtime(repo, args.track, args.action, args.sha), indent=2))
+    print(
+        json.dumps(
+            advance_implement_runtime(
+                repo,
+                args.track,
+                args.action,
+                args.sha,
+                args.code_message,
+                args.plan_message,
+                args.note_summary,
+                args.verify_message,
+                args.paths,
+            ),
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":

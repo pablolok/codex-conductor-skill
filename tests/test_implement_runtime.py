@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -40,6 +41,14 @@ def write_track(repo: Path) -> Path:
     (track_dir / "review.md").write_text("# Review\n", encoding="utf-8")
     (track_dir / "verify.md").write_text("# Verify\n", encoding="utf-8")
     return track_dir
+
+
+def init_git_repo(repo: Path) -> None:
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.name", "Test User"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "initial"], cwd=repo, check=True, capture_output=True)
 
 
 class ImplementRuntimeTests(unittest.TestCase):
@@ -117,6 +126,55 @@ class ImplementRuntimeTests(unittest.TestCase):
 
             self.assertEqual(state["stage"], "task_execution")
             self.assertEqual(state["current_task"]["title"], "Task: Second task")
+
+    def test_commit_task_action_advances_to_next_task(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            write_track(repo)
+            init_git_repo(repo)
+            advance_implement_runtime(repo, "sample_20260323", "start")
+            (repo / "app.py").write_text("print('hello')\n", encoding="utf-8")
+
+            state = advance_implement_runtime(
+                repo,
+                "sample_20260323",
+                "commit_task",
+                code_message="feat: first task",
+                plan_message="conductor(plan): Mark task complete",
+                paths=["app.py"],
+            )
+
+            self.assertEqual(state["stage"], "task_execution")
+            self.assertEqual(state["current_task"]["title"], "Task: Second task")
+
+    def test_commit_task_action_on_phase_boundary_transitions_to_phase_checkpoint(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            track_dir = write_track(repo)
+            (repo / "conductor" / "workflow.md").write_text(
+                "# Workflow\n\nPhase Completion Verification and Checkpointing Protocol\ngit notes\n",
+                encoding="utf-8",
+            )
+            (track_dir / "plan.md").write_text(
+                "## Phase: Phase 1\n- [ ] Task: First task\n\n## Phase: Phase 2\n- [ ] Task: Second task\n",
+                encoding="utf-8",
+            )
+            init_git_repo(repo)
+            advance_implement_runtime(repo, "sample_20260323", "start")
+            (repo / "app.py").write_text("print('hello')\n", encoding="utf-8")
+
+            state = advance_implement_runtime(
+                repo,
+                "sample_20260323",
+                "commit_task",
+                code_message="feat: first task",
+                plan_message="conductor(plan): Mark task complete",
+                paths=["app.py"],
+                note_summary="Finished phase 1.",
+            )
+
+            self.assertEqual(state["stage"], "phase_checkpoint")
+            self.assertEqual(state["phase"]["name"], "Phase 1")
 
 
 if __name__ == "__main__":
