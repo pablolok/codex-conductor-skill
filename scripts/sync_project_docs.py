@@ -35,6 +35,25 @@ def diff_text(original: str, updated: str, path_label: str) -> str:
     )
 
 
+def full_spec(spec_path: Path) -> str:
+    return read_text(spec_path)
+
+
+def needs_product_update(spec_text: str) -> bool:
+    lowered = spec_text.lower()
+    return any(keyword in lowered for keyword in ("feature", "new capability", "new workflow", "add ", "introduce ", "support "))
+
+
+def needs_tech_stack_update(spec_text: str) -> bool:
+    lowered = spec_text.lower()
+    return any(keyword in lowered for keyword in ("database", "postgres", "mysql", "redis", "api", "sdk", "react", "typescript", "python", ".net", "c#", "go ", "graphql"))
+
+
+def needs_guidelines_update(spec_text: str) -> bool:
+    lowered = spec_text.lower()
+    return any(keyword in lowered for keyword in ("brand", "branding", "tone", "voice", "rebrand", "messaging", "copy style"))
+
+
 def build_sync_payload(repo: Path, track_ref: str | None) -> dict[str, object]:
     conductor_dir = repo / "conductor"
     track_dir = resolve_track_dir(conductor_dir, track_ref)
@@ -44,19 +63,31 @@ def build_sync_payload(repo: Path, track_ref: str | None) -> dict[str, object]:
     guidelines_path = semantic_link_from_index(project_index, "Product Guidelines", "product-guidelines.md")
     spec_path = track_dir / "spec.md"
     summary = summarize_spec(spec_path)
+    spec_text = full_spec(spec_path)
 
     targets = [
-        ("Product", product_path, f"\n\n## Latest Track Sync\n\n- {track_dir.name}: {summary}\n"),
-        ("Tech Stack", tech_path, "\n\n## Latest Track Sync\n\n- No stack change proposed from this helper.\n"),
-        ("Product Guidelines", guidelines_path, "\n\n## Latest Track Sync\n\n- No product-guideline change proposed from this helper.\n"),
+        ("Product", "product_definition", product_path, f"\n\n## Latest Track Sync\n\n- {track_dir.name}: {summary}\n", needs_product_update(spec_text)),
+        ("Tech Stack", "tech_stack", tech_path, f"\n\n## Latest Track Sync\n\n- {track_dir.name}: Potential stack-impacting change noted in the track specification.\n", needs_tech_stack_update(spec_text)),
+        (
+            "Product Guidelines",
+            "product_guidelines",
+            guidelines_path,
+            f"\n\n## Latest Track Sync\n\n- {track_dir.name}: Proposed product-guideline change requires explicit approval due to sensitive product positioning impact.\n",
+            needs_guidelines_update(spec_text),
+        ),
     ]
 
     proposals: dict[str, str] = {}
     approval_questions: list[dict[str, object]] = []
-    for header, path, addition in targets:
+    summary_status: dict[str, str] = {}
+    for header, summary_key, path, addition, should_propose in targets:
         original = read_text(path).rstrip()
         updated = original if "## Latest Track Sync" in original else original + addition
         proposals[path.name] = addition
+        if not should_propose or updated == original:
+            summary_status[summary_key] = "no_change"
+            continue
+        summary_status[summary_key] = "proposed"
         approval_questions.append(
             {
                 "header": header,
@@ -73,16 +104,20 @@ def build_sync_payload(repo: Path, track_ref: str | None) -> dict[str, object]:
         "product_guidelines_path": str(guidelines_path),
         "proposals": proposals,
         "approval_questions": approval_questions,
+        "summary": summary_status,
     }
 
 
 def apply_sync_payload(payload: dict[str, object]) -> None:
-    for path_key, proposal in (
-        ("product_path", payload["proposals"]["product.md"]),
-        ("tech_stack_path", payload["proposals"]["tech-stack.md"]),
-        ("product_guidelines_path", payload["proposals"]["product-guidelines.md"]),
+    for path_key, proposal, summary_key in (
+        ("product_path", payload["proposals"]["product.md"], "product_definition"),
+        ("tech_stack_path", payload["proposals"]["tech-stack.md"], "tech_stack"),
+        ("product_guidelines_path", payload["proposals"]["product-guidelines.md"], "product_guidelines"),
     ):
         path = Path(str(payload[path_key]))
+        status = payload["summary"].get(summary_key)
+        if status != "proposed":
+            continue
         current = read_text(path)
         if "## Latest Track Sync" in current:
             continue
