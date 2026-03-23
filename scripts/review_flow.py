@@ -8,6 +8,7 @@ from pathlib import Path
 from conductor_fs import load_metadata, require_canonical_workspace
 from review_track import build_review_report, detect_scope
 from skills_catalog import installed_skill_names, partition_recommended_skills, recommend_skills
+from workflow_policy import parse_workflow_policy
 
 
 def load_styleguide_context(conductor_dir: Path) -> dict[str, object]:
@@ -71,6 +72,9 @@ def build_review_flow(repo: Path, track_ref: str | None, run_tests: bool = False
     track_dir = detect_scope(conductor_dir, track_ref)
     report = build_review_report(track_dir, repo)
     metadata = load_metadata(track_dir)
+    workflow_policy = parse_workflow_policy(
+        (conductor_dir / "workflow.md").read_text(encoding="utf-8") if (conductor_dir / "workflow.md").exists() else ""
+    )
     strategy = classify_diff_strategy(report["shortstat"])
     test_command = infer_test_command(repo)
     test_execution = execute_test_command(repo, test_command) if run_tests else None
@@ -98,6 +102,14 @@ def build_review_flow(repo: Path, track_ref: str | None, run_tests: bool = False
         "styleguides": {
             "mode": styleguides["mode"],
             "files": styleguides["files"],
+        },
+        "workflow": {
+            "required_test_categories": workflow_policy["required_test_categories"],
+            "definition_of_done": workflow_policy["definition_of_done"],
+            "requires_manual_verification": workflow_policy["requires_manual_verification"],
+            "requires_static_analysis": workflow_policy["requires_static_analysis"],
+            "requires_security_review": workflow_policy["requires_security_review"],
+            "requires_documentation_updates": workflow_policy["requires_documentation_updates"],
         },
         "test_command": test_command,
         "test_execution": test_execution,
@@ -131,6 +143,7 @@ def build_review_flow(repo: Path, track_ref: str | None, run_tests: bool = False
         },
         "checkpoints": [
             "Review against spec.md, plan.md, workflow.md, and AGENTS.md.",
+            "Check the workflow-defined testing requirements and definition of done before finalizing findings.",
             "Confirm the diff range is correct before reviewing findings.",
             "Record findings first, then risks, open gaps, and decision in review.md.",
             "If fixes are required, append a review-fix task before resuming implementation.",

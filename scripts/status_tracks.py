@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 
 from conductor_fs import parse_tracks_registry, read_text, require_canonical_workspace
+from workflow_policy import parse_workflow_policy
 
 
 TASK_PATTERN = re.compile(r"^\s*-\s+\[(?P<marker>[ x~])\]\s+", re.MULTILINE)
@@ -47,6 +48,19 @@ def summarize_plan(plan_path: Path) -> dict:
     }
 
 
+def unmet_expectations(repo: Path, entry: dict) -> list[str]:
+    workflow_path = repo / "conductor" / "workflow.md"
+    policy = parse_workflow_policy(read_text(workflow_path))
+    unmet: list[str] = []
+    if "integration" in policy["required_test_categories"]:
+        unmet.append("integration tests")
+    if policy["definition_of_done"]["documentation"] or policy["requires_documentation_updates"]:
+        unmet.append("documentation")
+    if policy["definition_of_done"]["static_analysis"] or policy["requires_static_analysis"]:
+        unmet.append("static analysis")
+    return unmet
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True)
@@ -79,6 +93,7 @@ def main() -> None:
     current_task = "none"
     next_task = "none"
     blockers: list[str] = []
+    unmet: list[str] = []
 
     for entry in entries:
         plan_path = entry["track_dir"] / "plan.md"
@@ -92,6 +107,7 @@ def main() -> None:
         if next_task == "none" and summary["next_task"] != "none":
             next_task = f"{entry['title']}: {summary['next_task']}"
         blockers.extend(f"{entry['title']}: {item}" for item in summary["blockers"])
+        unmet.extend(item for item in unmet_expectations(repo, entry) if item not in unmet)
 
     percent = int((completed_tasks / total_tasks) * 100) if total_tasks else 0
     project_status = "blocked" if blockers else ("in_progress" if completed_tasks < total_tasks else "complete")
@@ -101,6 +117,7 @@ def main() -> None:
     print(f"Current Phase and Task: {current_track} | {current_task}")
     print(f"Next Action Needed: {next_task}")
     print(f"Blockers: {', '.join(blockers) if blockers else 'none'}")
+    print(f"Unmet Verification Expectations: {', '.join(unmet) if unmet else 'none'}")
     print(f"Phases (total): {total_phases}")
     print(f"Tasks (total): {total_tasks}")
     print(f"Progress: {completed_tasks}/{total_tasks} ({percent}%)")

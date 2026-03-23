@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -83,6 +84,46 @@ class ReviewFlowTests(unittest.TestCase):
 
             self.assertEqual(flow["styleguides"]["mode"], "law")
             self.assertEqual(flow["styleguides"]["files"], ["python.md"])
+
+    def test_review_flow_surfaces_workflow_testing_and_done_requirements(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            conductor = repo / "conductor"
+            track_dir = conductor / "tracks" / "sample_20260323"
+            track_dir.mkdir(parents=True)
+            (repo / ".git").mkdir()
+            (conductor / "workflow.md").write_text(
+                "# Workflow\n\n## Testing Requirements\n\n### Integration Testing\n- Test complete user flows\n\n## Definition of Done\n\nA task is complete when:\n1. Documentation complete (if applicable)\n2. Code passes all configured linting and static analysis checks\n",
+                encoding="utf-8",
+            )
+            (conductor / "product-guidelines.md").write_text("# Guidelines\n", encoding="utf-8")
+            (conductor / "tech-stack.md").write_text("# Tech Stack\n", encoding="utf-8")
+            (conductor / "tracks.md").write_text(
+                "---\n\n- [~] **Track: Sample Track**\n  *Link: [./tracks/sample_20260323/](./tracks/sample_20260323/)*\n",
+                encoding="utf-8",
+            )
+            (track_dir / "metadata.json").write_text(
+                '{"track_id":"sample_20260323","type":"feature","status":"in_progress","created_at":"2026-03-23T00:00:00Z","updated_at":"2026-03-23T00:00:00Z","description":"Sample Track","title":"Sample Track"}',
+                encoding="utf-8",
+            )
+            (track_dir / "spec.md").write_text("# Spec\n", encoding="utf-8")
+            (track_dir / "plan.md").write_text("## Phase: Phase 1\n- [~] Task: Do work\n", encoding="utf-8")
+            (track_dir / "review.md").write_text("# Review\n", encoding="utf-8")
+            (track_dir / "verify.md").write_text("# Verify\n", encoding="utf-8")
+            result = subprocess.run(
+                ["git", "init"],
+                cwd=repo,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 0)
+
+            flow = build_review_flow(repo, "sample_20260323")
+
+            self.assertEqual(flow["workflow"]["required_test_categories"], ["integration"])
+            self.assertTrue(flow["workflow"]["definition_of_done"]["documentation"])
+            self.assertTrue(flow["workflow"]["definition_of_done"]["static_analysis"])
 
     def test_execute_test_command_returns_skipped_for_manual(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
