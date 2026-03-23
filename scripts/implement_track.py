@@ -5,13 +5,14 @@ import json
 from pathlib import Path
 
 from conductor_fs import (
-    find_first_incomplete_task,
     find_in_progress_task,
+    find_first_incomplete_task,
     load_metadata,
     refresh_portfolio_indexes,
     refresh_track_index,
     require_canonical_workspace,
     resolve_track_dir,
+    update_phase_checkpoint,
     update_registry_entry_status,
     update_task_marker,
     write_metadata,
@@ -25,6 +26,8 @@ def main() -> None:
     parser.add_argument("--start", action="store_true")
     parser.add_argument("--complete-task")
     parser.add_argument("--sha")
+    parser.add_argument("--checkpoint-phase")
+    parser.add_argument("--checkpoint-sha")
     parser.add_argument("--complete-track", action="store_true")
     args = parser.parse_args()
 
@@ -51,6 +54,28 @@ def main() -> None:
         refresh_track_index(track_dir, template_base)
         refresh_portfolio_indexes(conductor_dir, template_base)
         result["action"] = "complete_track"
+        print(json.dumps(result, indent=2))
+        return
+
+    if args.checkpoint_phase:
+        task = find_in_progress_task(plan_path) or find_first_incomplete_task(plan_path)
+        if task is None:
+            raise SystemExit("No phase context available for checkpointing.")
+        phase_name = args.checkpoint_phase
+        phase_line = None
+        from conductor_fs import parse_plan
+
+        for phase in parse_plan(plan_path):
+            if phase["name"].lower() == phase_name.lower():
+                phase_line = phase["line_number"]
+                break
+        if phase_line is None:
+            raise SystemExit(f"Phase '{phase_name}' not found in plan.")
+        if not args.checkpoint_sha:
+            raise SystemExit("--checkpoint-sha is required with --checkpoint-phase.")
+        update_phase_checkpoint(plan_path, phase_line, args.checkpoint_sha)
+        result["action"] = "checkpoint_phase"
+        result["phase"] = phase_name
         print(json.dumps(result, indent=2))
         return
 

@@ -629,3 +629,19 @@ def collect_revert_candidates(conductor_dir: Path) -> list[dict[str, str]]:
             if len(candidates) >= 3:
                 return candidates[:3]
     return candidates[:3]
+
+
+def semantic_link_from_index(index_path: Path, label: str, default_relative: str) -> Path:
+    index_text = read_text(index_path)
+    pattern = re.compile(rf"\[(?P<label>[^\]]+)\]\((?P<link>[^)]+)\)")
+    for match in pattern.finditer(index_text):
+        current_label = match.group("label").strip().lower()
+        if label.lower() in current_label:
+            link = match.group("link").strip()
+            if link.startswith("./"):
+                candidate = (index_path.parent / link[2:]).resolve()
+            else:
+                candidate = (index_path.parent / link).resolve()
+            if candidate.exists():
+                return candidate
+    return (index_path.parent / default_relative).resolve()

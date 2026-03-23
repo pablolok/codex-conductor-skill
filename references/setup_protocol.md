@@ -4,7 +4,7 @@
 
 Follow this order:
 
-1. Audit `conductor/` for resumable setup artifacts.
+1. Audit `conductor/` for resumable setup artifacts using `scripts/setup_workspace.py`.
 2. Detect whether the repository is greenfield or brownfield.
 3. On brownfield, ask permission before any read-only project scan.
 4. Infer stable context from `README.md`, `AGENTS.md`, manifests, source layout, and existing Conductor files.
@@ -28,6 +28,11 @@ Follow this order:
 11. Ask for explicit confirmation.
 12. Only after confirmation, materialize or repair the canonical `conductor/` workspace.
 13. When the workspace is ready, hand off into the initial track flow if the session requires it.
+
+Support scripts:
+
+- `scripts/setup_workspace.py` for maturity detection, artifact audit, resume target, and skills recommendations
+- `scripts/draft_setup_docs.py` for first-pass document drafts during interactive setup
 
 Interaction bridge:
 

@@ -23,3 +23,4 @@
 - Remove or update the active entry in `conductor/tracks.md`.
 - Refresh `conductor/index.md`.
 - Ensure no archived track directory remains under `conductor/tracks/`.
+- Use `scripts/cleanup_track.py` to model archive, delete, or skip decisions before mutating track storage.

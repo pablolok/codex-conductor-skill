@@ -17,10 +17,16 @@ It is structured so it can be moved into its own repository without depending on
 Key helper scripts now include:
 
 - `scripts/setup_workspace.py`
+- `scripts/draft_setup_docs.py`
 - `scripts/new_track.py`
+- `scripts/draft_new_track.py`
 - `scripts/implement_track.py`
+- `scripts/git_notes_helper.py`
 - `scripts/review_track.py`
 - `scripts/revert_track.py`
+- `scripts/install_skills.py`
+- `scripts/sync_project_docs.py`
+- `scripts/cleanup_track.py`
 - `scripts/status_tracks.py`
 - `scripts/archive_tracks.py`
 - `scripts/migrate_workspace.py`
@@ -106,6 +112,18 @@ Preview support:
 
 ```powershell
 python scripts/bootstrap_conductor.py --repo <repo-root> --preview
+```
+
+Setup analysis support:
+
+```powershell
+python scripts/setup_workspace.py --repo <repo-root>
+```
+
+Skills install support:
+
+```powershell
+python scripts/install_skills.py --repo <repo-root> --catalog skills/catalog.md --skills <skill-name>
 ```
 
 ## Publish As Its Own Repo

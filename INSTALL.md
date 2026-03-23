@@ -46,11 +46,17 @@ Check that these files exist:
 - `references/artifact_sync.md`
 - `scripts/bootstrap_conductor.py`
 - `scripts/setup_workspace.py`
+- `scripts/draft_setup_docs.py`
 - `scripts/migrate_workspace.py`
 - `scripts/new_track.py`
+- `scripts/draft_new_track.py`
 - `scripts/implement_track.py`
+- `scripts/git_notes_helper.py`
 - `scripts/review_track.py`
 - `scripts/revert_track.py`
+- `scripts/install_skills.py`
+- `scripts/sync_project_docs.py`
+- `scripts/cleanup_track.py`
 - `scripts/skills_catalog.py`
 - `scripts/status_tracks.py`
 - `scripts/archive_tracks.py`
@@ -90,6 +96,14 @@ Use this to inspect the materialization preview support:
 python scripts/bootstrap_conductor.py --repo <repo-root> --preview
 ```
 
+## Inspect Setup State
+
+Use this to inspect project maturity, resumable setup state, and recommended skills:
+
+```powershell
+python scripts/setup_workspace.py --repo <repo-root>
+```
+
 ## Materialize a Repository Context
 
 Run the materialization step against a target repository:
@@ -111,6 +125,14 @@ python scripts/migrate_workspace.py --repo <repo-root>
 ```
 
 This converts the workspace into the canonical Gemini-compatible format.
+
+## Install Recommended Skills
+
+Use this when the setup or new-track flow recommends skill installation:
+
+```powershell
+python scripts/install_skills.py --repo <repo-root> --catalog skills/catalog.md --skills <skill-name>
+```
 
 ## Update an Existing Installation
 
