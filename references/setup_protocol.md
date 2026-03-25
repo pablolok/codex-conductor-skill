@@ -17,13 +17,12 @@ Follow this order:
    - tech stack
    - workflow expectations
    - track branch naming or branch workflow details if the repository needs them
-   - coverage target
    - styleguide selection
 9. In the workflow section, explicitly confirm whether existing workflow rules should be preserved or refreshed.
    - branch policy: ask per track whether to create or use a dedicated branch
    - shared branch hygiene: unfinished tracks should not remain on shared branches
-   - commit policy: commit per phase unless preserved workflow says otherwise
-   - coverage target: ask explicitly and record the approved threshold
+   - preserve the official workflow template wording unless the user requests repo-specific edits
+   - capture any approved command examples or repository-specific workflow changes explicitly
 10. Produce a proposed shared context summary.
 11. Preview the live workspace artifacts that would be created or refreshed, including the approved workflow policy.
 12. Ask for explicit confirmation.

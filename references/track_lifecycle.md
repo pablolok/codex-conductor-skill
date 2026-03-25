@@ -22,7 +22,7 @@ Lifecycle expectations:
 7. `plan.md` should use phases as the main checkpoints, with `[ ]`, `[~]`, `[x]` task markers and room to append task SHA or phase checkpoint annotations.
 8. `conductor:implement` progresses the next pending task from `plan.md`.
 9. The track registry in `conductor/tracks.md` is the canonical project-level source of truth for active tracks.
-10. Verification should be planned against the approved repository coverage target and the repository's workflow rules.
+10. Verification should be planned against the coverage and verification rules recorded in the official workflow template and any approved repository-specific edits.
 11. `conductor:review` records findings and a decision in `review.md`.
 12. `conductor:archive` moves only completed tracks into `conductor/archive/` and removes or updates the active registry entry.
 13. `conductor:implement` should preserve task SHA recording and phase checkpoint annotations when they exist or when the workflow requires them.

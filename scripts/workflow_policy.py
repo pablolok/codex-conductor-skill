@@ -3,6 +3,26 @@ from __future__ import annotations
 import re
 
 
+def extract_coverage_target(workflow_text: str) -> str:
+    explicit_match = re.search(r"Coverage target:\s*(.+)", workflow_text, re.IGNORECASE)
+    if explicit_match:
+        return explicit_match.group(1).strip()
+
+    high_coverage_match = re.search(r"Aim for\s*(>[0-9]+%)\s*code coverage", workflow_text, re.IGNORECASE)
+    if high_coverage_match:
+        return high_coverage_match.group(1)
+
+    quality_gate_match = re.search(r"Code coverage meets requirements\s*\(([^)]+)\)", workflow_text, re.IGNORECASE)
+    if quality_gate_match:
+        return quality_gate_match.group(1).strip()
+
+    checklist_match = re.search(r"Coverage adequate\s*\(([^)]+)\)", workflow_text, re.IGNORECASE)
+    if checklist_match:
+        return checklist_match.group(1).strip()
+
+    return "unspecified"
+
+
 def extract_command_block(workflow_text: str, heading: str) -> list[str]:
     pattern = re.compile(
         rf"###\s+{re.escape(heading)}\s*```(?:\w+)?\n(?P<body>.*?)```",
@@ -53,16 +73,16 @@ def extract_definition_of_done(workflow_text: str) -> dict[str, bool]:
 
 
 def parse_workflow_policy(workflow_text: str) -> dict[str, object]:
-    coverage_match = re.search(r"Coverage target:\s*(.+)", workflow_text, re.IGNORECASE)
     has_phase_protocol = "Phase Completion Verification and Checkpointing Protocol" in workflow_text
     lowered = workflow_text.lower()
     return {
-        "coverage_target": coverage_match.group(1).strip() if coverage_match else "unspecified",
+        "coverage_target": extract_coverage_target(workflow_text),
         "requires_git_notes": "git notes" in lowered,
         "requires_tdd": "test-driven development" in lowered or "write failing tests" in lowered,
         "requires_manual_verification": has_phase_protocol and "await explicit user feedback" in lowered,
         "requires_phase_checkpoints": has_phase_protocol,
-        "requires_verification_commit": has_phase_protocol and "create a checkpoint commit" in lowered,
+        "requires_verification_commit": has_phase_protocol
+        and ("create a checkpoint commit" in lowered or "create checkpoint commit" in lowered),
         "ci_aware_commands": "ci=true" in workflow_text or "non-interactive & ci-aware" in lowered,
         "requires_documentation_updates": has_quality_gate(workflow_text, "documentation updated if needed")
         or has_quality_gate(workflow_text, "all public functions/methods are documented"),

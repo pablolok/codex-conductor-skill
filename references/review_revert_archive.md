@@ -4,7 +4,7 @@
 
 - Review against `spec.md`, `plan.md`, `AGENTS.md`, and executed verification.
 - Consider whether the recorded commit history matches the workflow recorded in `conductor/workflow.md`.
-- Consider whether the verification evidence is consistent with the approved coverage target.
+- Consider whether the verification evidence is consistent with the coverage and verification rules recorded in `conductor/workflow.md`.
 - Use deterministic helpers to derive scope, diff range, and revert candidates before the agent takes mutating steps.
 - Use `scripts/review_runtime.py` to drive the review checkpoint sequence through scope confirmation, large-review branching, test execution, decision handling, and cleanup handoff.
 - Use `scripts/review_flow.py` when the underlying review payload needs to be inspected directly before mutating `review.md`.

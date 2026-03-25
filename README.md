@@ -93,8 +93,8 @@ What is considered done:
 - Codex can take over an existing canonical Gemini Conductor workspace without reshaping it.
 - Legacy Codex-native workspaces can be migrated into the canonical Gemini-compatible format.
 - `setup`, `newTrack`, `implement`, `status`, `review`, `revert`, and `archive` all have deterministic helper and runtime support.
-- The runtime understands the high-value workflow policy now encoded in `conductor/workflow.md`, including:
-  - coverage target
+- The runtime understands the high-value workflow policy encoded in the official `conductor/workflow.md` template, including:
+  - code coverage requirements
   - task git-notes usage
   - TDD requirements
   - manual verification checkpoints
@@ -122,8 +122,8 @@ It should:
 - request permission for a read-only scan on brownfield repositories
 - analyze the target repository
 - gather or refresh only the missing shared context through guided questions
-- define the shared Git workflow for tracks
-- ask for and record the repository coverage target
+- preserve the official workflow template unless the user explicitly requests changes
+- discuss workflow customizations before changing the upstream wording
 - show a preview of the proposed live workspace artifacts and decisions
 - require explicit confirmation
 - only then materialize the repo-local `conductor/` files
@@ -134,16 +134,11 @@ The shared Git workflow currently encoded by the skill is:
 - keep unfinished tracks off `main` and other shared branches
 - use the workflow recorded in `workflow.md`
 
-The shared quality workflow currently encoded by the skill is:
-
-- ask for the repository coverage target during setup
-- in this repository, the approved target is 100%
-
 For existing repositories, the skill treats an upstream-style `conductor/` workspace as canonical and should take over from the workspace already on disk instead of replacing it with a local-only format.
 
 ## Plan Format
 
-Track plans are expected to use a hybrid format:
+Track plans are expected to stay compatible with the upstream Conductor format:
 
 - phases remain the main execution checkpoints
 - each phase contains numbered steps

@@ -44,6 +44,20 @@ class SetupFlowTests(unittest.TestCase):
             self.assertIn("styleguide_mode_question", workflow_checkpoint)
             self.assertIn("styleguide_library_batches", workflow_checkpoint)
 
+    def test_setup_flow_uses_official_workflow_template_for_new_workspaces(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            (repo / "README.md").write_text("# Sample\n", encoding="utf-8")
+            (repo / "AGENTS.md").write_text("### Main Technologies\n- Python\n", encoding="utf-8")
+
+            flow = build_setup_flow(repo, ROOT)
+            workflow_draft = flow["drafts"]["workflow.md"]
+
+            self.assertTrue(workflow_draft.startswith("# Project Workflow"))
+            self.assertIn("### Standard Task Workflow", workflow_draft)
+            self.assertIn("### Phase Completion Verification and Checkpointing Protocol", workflow_draft)
+            self.assertIn("## Definition of Done", workflow_draft)
+
 
 if __name__ == "__main__":
     unittest.main()

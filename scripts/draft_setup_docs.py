@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
-from conductor_fs import infer_product_name, infer_solution_file, infer_source_roots, infer_tech_stack, read_text
+from conductor_fs import infer_product_name, infer_solution_file, infer_source_roots, infer_tech_stack, load_template, read_text
 
 
 def build_product(repo: Path) -> str:
@@ -78,24 +78,7 @@ def build_workflow(repo: Path) -> str:
     existing = read_text(repo / "conductor" / "workflow.md")
     if existing:
         return existing
-    return "\n".join(
-        [
-            "# Project Workflow",
-            "",
-            "## Guiding Principles",
-            "",
-            "1. The plan is the source of truth.",
-            "2. Follow TDD where the repo workflow expects it.",
-            "3. Verify coverage against the approved threshold.",
-            "4. Use non-interactive commands where possible.",
-            "",
-            "## Commit Policy",
-            "",
-            "- Branch policy: ask per track whether to create or use a dedicated branch.",
-            "- Commit policy: commit per phase unless a preserved workflow says otherwise.",
-            "- Record task SHAs in `plan.md` when commits are created.",
-        ]
-    )
+    return load_template(Path(__file__).resolve().parents[1], "workflow.md.tmpl").rstrip()
 
 
 def main() -> None:

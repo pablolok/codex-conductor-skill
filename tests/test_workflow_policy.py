@@ -35,6 +35,21 @@ class WorkflowPolicyTests(unittest.TestCase):
         self.assertTrue(policy["requires_phase_checkpoints"])
         self.assertTrue(policy["requires_verification_commit"])
 
+    def test_parse_workflow_policy_extracts_coverage_from_official_template_language(self) -> None:
+        text = """# Project Workflow
+
+## Guiding Principles
+
+4. **High Code Coverage:** Aim for >80% code coverage for all modules
+
+### Quality Gates
+
+- [ ] Code coverage meets requirements (>80%)
+"""
+        policy = parse_workflow_policy(text)
+
+        self.assertEqual(policy["coverage_target"], ">80%")
+
     def test_parse_workflow_policy_extracts_command_blocks(self) -> None:
         text = """# Workflow
 
@@ -123,6 +138,31 @@ A task is complete when:
 """
         policy = parse_workflow_policy(text)
 
+        self.assertEqual(policy["required_test_categories"], ["unit", "integration", "mobile"])
+        self.assertTrue(policy["definition_of_done"]["tests"])
+        self.assertTrue(policy["definition_of_done"]["coverage"])
+        self.assertTrue(policy["definition_of_done"]["documentation"])
+        self.assertTrue(policy["definition_of_done"]["static_analysis"])
+        self.assertTrue(policy["definition_of_done"]["mobile"])
+        self.assertTrue(policy["definition_of_done"]["git_notes"])
+
+    def test_parse_workflow_policy_reads_official_template(self) -> None:
+        template = (ROOT / "assets" / "repo_templates" / "workflow.md.tmpl").read_text(encoding="utf-8")
+
+        policy = parse_workflow_policy(template)
+
+        self.assertEqual(policy["coverage_target"], ">80%")
+        self.assertTrue(policy["requires_tdd"])
+        self.assertTrue(policy["requires_git_notes"])
+        self.assertTrue(policy["requires_manual_verification"])
+        self.assertTrue(policy["requires_phase_checkpoints"])
+        self.assertTrue(policy["requires_verification_commit"])
+        self.assertTrue(policy["ci_aware_commands"])
+        self.assertTrue(policy["requires_documentation_updates"])
+        self.assertTrue(policy["requires_type_safety"])
+        self.assertTrue(policy["requires_static_analysis"])
+        self.assertTrue(policy["requires_mobile_verification"])
+        self.assertTrue(policy["requires_security_review"])
         self.assertEqual(policy["required_test_categories"], ["unit", "integration", "mobile"])
         self.assertTrue(policy["definition_of_done"]["tests"])
         self.assertTrue(policy["definition_of_done"]["coverage"])

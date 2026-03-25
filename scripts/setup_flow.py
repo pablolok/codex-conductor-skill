@@ -238,25 +238,24 @@ def build_tech_questions(maturity: str, detected_stack: str) -> list[dict[str, o
 def build_workflow_questions(styleguides: list[str]) -> list[dict[str, object]]:
     return [
         {
-            "header": "Branching",
-            "question": "Should each track explicitly confirm its branch strategy before implementation?",
+            "header": "Workflow",
+            "question": "Should setup preserve the official Conductor workflow template unless you explicitly request edits?",
             "type": "yesno",
         },
         {
-            "header": "Coverage",
-            "question": "What repository coverage target should workflow.md record?",
-            "type": "text",
-            "placeholder": "e.g. 80%, 90%, 100%",
+            "header": "Commands",
+            "question": "Should the Development Commands examples in workflow.md be tailored to this repository now?",
+            "type": "yesno",
         },
         {
-            "header": "Commits",
-            "question": "What commit cadence should Conductor preserve?",
+            "header": "Customize",
+            "question": "If workflow.md needs edits beyond command examples, how should setup proceed?",
             "type": "choice",
             "multiSelect": False,
             "options": [
-                {"label": "Per phase", "description": "Default Conductor checkpoint cadence."},
-                {"label": "Per task", "description": "Finer-grained commit history per completed task."},
-                {"label": "Preserve repo policy", "description": "Use the existing repository workflow if one exists."},
+                {"label": "Keep Official", "description": "Preserve the upstream wording and structure."},
+                {"label": "Review First", "description": "Discuss proposed edits before changing the template."},
+                {"label": "Repo Specific", "description": "Adapt the workflow text for this repository now."},
             ],
         },
         {

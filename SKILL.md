@@ -45,12 +45,12 @@ Use this skill only for explicit Conductor workflow requests.
 9. Infer as much product, guideline, stack, workflow, and styleguide context as possible from the repository.
 10. Use `scripts/draft_setup_docs.py --repo <repo-root>` to generate starting drafts for shared context files when guided setup needs a first-pass document.
 11. Use `scripts/apply_setup_drafts.py --repo <repo-root> --drafts-json <file>` to write the approved shared-context drafts immediately after approval, without regenerating different content.
-12. Ask only for missing or preference-driven context, including track Git workflow policy and coverage target.
-13. Capture and approve the workflow policy that should be written into or preserved in `conductor/workflow.md`.
+12. Ask only for missing or preference-driven context, and preserve the official workflow template unless the user explicitly requests edits.
+13. Capture and approve any workflow changes that should be written into or preserved in `conductor/workflow.md`.
    - branch policy: ask per track whether to create or use a dedicated branch
    - shared branch hygiene: unfinished tracks should not remain on `main` or another shared branch
-   - commit policy: commit per phase
-   - coverage target for the repository workflow
+   - commit and checkpoint behavior already defined by the official workflow template
+   - any repository-specific command or wording edits the user wants applied
 14. Produce a structured preview of the proposed live workspace artifacts and approved workflow decisions before writing files.
 15. Require explicit user confirmation.
 16. If an official-style workspace already exists, preserve its shared context files and only fill missing artifacts.

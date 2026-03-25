@@ -108,8 +108,8 @@ It should:
 2. request permission for a read-only scan on brownfield repositories
 3. analyze the repository
 4. gather or refresh only the missing shared context through guided questions
-5. define the shared Git workflow for tracks
-6. ask for and record the repository coverage target
+5. preserve the official workflow template unless the user explicitly requests changes
+6. review any workflow customizations before changing the upstream wording
 7. show a preview of the proposed live workspace artifacts and workflow decisions
 8. require explicit confirmation
 9. only then materialize the repo-local `conductor/` workspace
@@ -119,7 +119,7 @@ The shared Git workflow encoded by the skill is:
 - branch policy: ask per track whether to create or use a dedicated branch
 - shared branch hygiene: unfinished tracks should not remain on `main` or another shared branch
 - commit policy: commit per phase
-Track plans are expected to use a hybrid format:
+Track plans are expected to stay compatible with the upstream Conductor format:
 
 - phases remain the main execution checkpoints
 - each phase contains numbered steps
