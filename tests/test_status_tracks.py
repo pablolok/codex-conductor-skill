@@ -41,7 +41,7 @@ class StatusTracksTests(unittest.TestCase):
             (track_dir / "review.md").write_text("# Review\n", encoding="utf-8")
             (track_dir / "verify.md").write_text("# Verify\n", encoding="utf-8")
             result = subprocess.run(
-                ["python", str(ROOT / "scripts" / "status_tracks.py"), "--repo", str(repo)],
+                [sys.executable, str(ROOT / "scripts" / "status_tracks.py"), "--repo", str(repo)],
                 cwd=repo,
                 text=True,
                 capture_output=True,
